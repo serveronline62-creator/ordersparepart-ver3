@@ -22,7 +22,7 @@
     const db = firebase.firestore();
   </script>
   <style>
-    /* ===== GAYA CSS (sama seperti sebelumnya) ===== */
+    /* ===== CSS (sama seperti sebelumnya, tidak diubah) ===== */
     :root, [data-theme="dark"] {
       --bg-primary: #0b1120; --bg-secondary: #111827; --bg-card: #1a2332;
       --bg-card-hover: #1e293b; --bg-input: #0f172a; --border: #1e3a5f;
@@ -132,6 +132,8 @@
     .btn:disabled { opacity:0.5; cursor:not-allowed; transform:none !important; }
     .btn-download { background:linear-gradient(135deg,#1d6f42,#1a5c38); color:#fff; border:1px solid rgba(29,111,66,0.4); box-shadow:0 0 16px rgba(29,111,66,0.2); }
     .btn-download:hover { box-shadow:0 0 28px rgba(29,111,66,0.4); transform:translateY(-1px); background:linear-gradient(135deg,#228b4f,#1d6f42); }
+    .btn-generate { background:linear-gradient(135deg,#8b5cf6,#7c3aed); color:#fff; border:1px solid rgba(139,92,246,0.4); box-shadow:0 0 16px rgba(139,92,246,0.2); }
+    .btn-generate:hover { box-shadow:0 0 28px rgba(139,92,246,0.4); transform:translateY(-1px); background:linear-gradient(135deg,#a78bfa,#8b5cf6); }
     .table-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; position:relative; }
     .table-toolbar { padding:1.15rem 1.5rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
     .table-toolbar h2 { font-size:1.1rem; font-weight:700; display:flex; align-items:center; gap:10px; } .table-toolbar h2 i { color:var(--accent); }
@@ -267,6 +269,8 @@
               <button class="chip" onclick="filterStatus('FINISH', this)">FINISH</button>
             </div>
             <div class="search-box"><i class="fas fa-search"></i><input type="text" placeholder="Cari order..." id="searchInput" oninput="debouncedSearch()"></div>
+            <!-- Tombol Generate No. Order baru -->
+            <button class="btn btn-generate btn-sm" onclick="generateNoOrder()" id="btnGenerate"><i class="fas fa-sync-alt"></i> Generate No. Order</button>
             <button class="btn btn-download btn-sm" onclick="downloadExcel()"><i class="fas fa-file-excel"></i> Download Excel</button>
           </div>
         </div>
@@ -486,9 +490,7 @@
       if(newRowIndices.size>0){ setTimeout(()=>{ const nr=tb.querySelector('.new-row'); if(nr) nr.scrollIntoView({behavior:'smooth',block:'center'}); },300); }
     }
 
-    // ============================================================
-    // PERBAIKAN FINAL: INLINE EDIT LANGSUNG TAMPIL & PERMANEN
-    // ============================================================
+    // --- INLINE EDIT (tampil permanen) ---
     function startInlineEdit(td){
       const span = td.querySelector('span:first-child');
       if (!span) return;
@@ -498,32 +500,25 @@
       const field = td.dataset.field;
       const oldValue = (currentText === '-') ? '' : currentText;
       
-      // Buat input
       const input = document.createElement('input');
       input.type = 'text';
       input.className = 'inline-input';
       input.value = oldValue;
-      
-      // Ganti span dengan input
       span.replaceWith(input);
       input.focus();
       input.select();
 
-      // Fungsi untuk menyimpan
       const save = () => {
         const val = input.value.trim();
-        // Buat span baru dengan nilai baru (langsung tampil)
         const newSpan = document.createElement('span');
         newSpan.textContent = val || '-';
         input.replaceWith(newSpan);
         
-        // Update data lokal allOrders
         const orderIndex = allOrders.findIndex(o => o._docId === docId);
         if (orderIndex !== -1) {
           allOrders[orderIndex][field] = val;
         }
         
-        // Jika field adalah TANGGAL SELESAI, perbarui kolom Lama Pengiriman
         if (field === 'TANGGAL SELESAI') {
           const tr = td.closest('tr');
           const tglOrderCell = tr.querySelector('td:nth-child(15)');
@@ -539,19 +534,13 @@
           }
         }
         
-        // Kirim update ke Firebase di background (tanpa reload tabel)
         if (docId && field) {
           const updateObj = {};
           updateObj[field] = val;
           db.collection('orders').doc(docId).update(updateObj)
-            .then(() => {
-              // Tidak perlu loadOrders, karena DOM sudah diperbarui.
-              // Hanya tampilkan notifikasi sukses.
-              showToast(`${field} berhasil diupdate!`, 'success');
-            })
+            .then(() => { showToast(`${field} berhasil diupdate!`, 'success'); })
             .catch(er => {
               showToast('Error: ' + er.message, 'error');
-              // Rollback ke nilai lama
               const rollbackSpan = document.createElement('span');
               rollbackSpan.textContent = oldValue || '-';
               const currentSpan = td.querySelector('span:first-child');
@@ -560,11 +549,9 @@
               } else {
                 td.appendChild(rollbackSpan);
               }
-              // Kembalikan data lokal
               if (orderIndex !== -1) {
                 allOrders[orderIndex][field] = oldValue;
               }
-              // Kembalikan Lama Pengiriman jika perlu
               if (field === 'TANGGAL SELESAI') {
                 const tr = td.closest('tr');
                 const tglOrderCell = tr.querySelector('td:nth-child(15)');
@@ -580,16 +567,13 @@
         }
       };
 
-      // Fungsi untuk batal
       const cancel = () => {
         const newSpan = document.createElement('span');
         newSpan.textContent = oldValue || '-';
         input.replaceWith(newSpan);
       };
 
-      // Event: blur -> simpan
       input.addEventListener('blur', save);
-      // Event: keydown (Enter -> simpan, Escape -> batal)
       input.addEventListener('keydown', function(e){
         if (e.key === 'Enter') {
           e.preventDefault();
@@ -599,6 +583,44 @@
           cancel();
         }
       });
+    }
+
+    // ============================================================
+    // FUNGSI GENERATE NO. ORDER BARU (hapus & buat baru)
+    // ============================================================
+    function generateNoOrder() {
+      if (allOrders.length === 0) {
+        showToast('Tidak ada data untuk dibuatkan nomor order.', 'warning');
+        return;
+      }
+      const btn = document.getElementById('btnGenerate');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Generating...';
+      
+      // Urutkan data berdasarkan createdAt (atau _rowIndex)
+      const sorted = [...allOrders].sort((a, b) => (a.createdAt || a._rowIndex) - (b.createdAt || b._rowIndex));
+      
+      // Buat array promises untuk update
+      const promises = sorted.map((order, index) => {
+        const newNoOrder = 'ORD-' + String(index + 1).padStart(4, '0');
+        return db.collection('orders').doc(order._docId).update({
+          'No. Order': newNoOrder
+        });
+      });
+      
+      Promise.all(promises)
+        .then(() => {
+          showToast('Semua nomor order berhasil digenerate!', 'success');
+          // Refresh data dari Firebase
+          loadOrders();
+        })
+        .catch(er => {
+          showToast('Error: ' + er.message, 'error');
+        })
+        .finally(() => {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-sync-alt"></i> Generate No. Order';
+        });
     }
 
     // --- OTHER FUNCTIONS ---
