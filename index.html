@@ -307,7 +307,6 @@
     <div class="modal">
       <div class="modal-header"><h3><i class="fas fa-edit"></i> Edit Order</h3><button class="modal-close" onclick="closeEditModal()"><i class="fas fa-times"></i></button></div>
       <div class="modal-body">
-        <input type="hidden" id="modalRowIndex">
         <input type="hidden" id="modalDocId">
         <div style="background:rgba(128,128,128,0.1);border-radius:var(--radius);padding:0.85rem 1rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><span style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--accent);font-weight:700;" id="modalOrderNo"></span><span style="color:var(--text-muted);">|</span><span style="font-size:0.78rem;color:var(--text-secondary);" id="modalPartInfo"></span></div>
         <div class="form-group">
@@ -320,8 +319,8 @@
           </select>
         </div>
         <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> Tgl Order</span></label><input class="form-input" type="date" id="modalTglOrder"></div>
-        <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> No. Order</span></label><input class="form-input" type="text" id="modalNoOrder"></div>
-        <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> Keterangan</span></label><textarea class="form-textarea" id="modalKeterangan"></textarea></div>
+        <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> No. Order</span></label><input class="form-input" type="text" id="modalNoOrder" placeholder="Masukkan nomor order"></div>
+        <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> Keterangan</span></label><textarea class="form-textarea" id="modalKeterangan" placeholder="Catatan tambahan"></textarea></div>
       </div>
       <div class="modal-footer"><button class="btn btn-secondary btn-sm" onclick="closeEditModal()">Batal</button><button class="btn btn-primary btn-sm" onclick="submitUpdate()" id="modalSaveBtn"><i class="fas fa-save"></i> Simpan</button></div>
     </div>
@@ -426,7 +425,6 @@
       
       const sb=document.getElementById('submitBtn'),fl2=document.getElementById('formLoading');sb.disabled=true;sb.innerHTML='<div class="spinner"></div> Menyimpan...';fl2.classList.add('active');
       
-      // === FIREBASE: Simpan data baru ke Firestore ===
       d['STATUS'] = 'PENDING';
       d['TGL Order'] = '';
       d['No. Order'] = '';
@@ -506,7 +504,6 @@
     function openEditModal(docId){
       const o=allOrders.find(function(x){return x._docId===docId;});
       if(!o)return;
-      document.getElementById('modalRowIndex').value=o._rowIndex;
       document.getElementById('modalDocId').value=docId;
       document.getElementById('modalStatus').value=(o['STATUS']||'PENDING').toUpperCase();
       document.getElementById('modalTglOrder').value=o['TGL Order']||'';
@@ -519,14 +516,17 @@
     
     // === FIREBASE: Update data di Firestore ===
     function submitUpdate(){
-      const docId=document.getElementById('modalDocId').value;
-      const status=document.getElementById('modalStatus').value;
-      const tglOrder=document.getElementById('modalTglOrder').value;
-      const noOrder=document.getElementById('modalNoOrder').value.trim();
-      const keterangan=document.getElementById('modalKeterangan').value.trim();
-      const btn=document.getElementById('modalSaveBtn');
+      const docId = document.getElementById('modalDocId').value;
+      if (!docId) { showToast('ID dokumen tidak ditemukan.', 'error'); return; }
       
-      btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Menyimpan...';
+      const status = document.getElementById('modalStatus').value;
+      const tglOrder = document.getElementById('modalTglOrder').value;
+      const noOrder = document.getElementById('modalNoOrder').value.trim();
+      const keterangan = document.getElementById('modalKeterangan').value.trim();
+      const btn = document.getElementById('modalSaveBtn');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Menyimpan...';
       
       db.collection('orders').doc(docId).update({
         'STATUS': status,
@@ -535,13 +535,15 @@
         'Keterangan Pemenuhan': keterangan,
         'updatedAt': firebase.firestore.FieldValue.serverTimestamp()
       }).then(function() {
-        btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> Simpan';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Simpan';
         closeEditModal();
-        showToast('Order berhasil diupdate!','success');
+        showToast('Order berhasil diupdate!', 'success');
         loadOrders();
       }).catch(function(er) {
-        btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> Simpan';
-        showToast('Error: '+er.message,'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Simpan';
+        showToast('Error: ' + er.message, 'error');
       });
     }
     
