@@ -11,7 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <style>
-    /* --- style (sama seperti sebelumnya, tidak diubah) --- */
+    /* --- CSS (sama seperti sebelumnya, tidak diubah) --- */
     :root, [data-theme="dark"] { --bg-primary: #0b1120; --bg-secondary: #111827; --bg-card: #1a2332; --bg-card-hover: #1e293b; --bg-input: #0f172a; --border: #1e3a5f; --border-focus: #00d4aa; --accent: #00d4aa; --accent-dim: rgba(0,212,170,0.15); --accent-glow: rgba(0,212,170,0.3); --warning: #f59e0b; --danger: #ef4444; --info: #3b82f6; --success: #10b981; --text-primary: #f1f5f9; --text-secondary: #94a3b8; --text-muted: #64748b; --shadow: 0 4px 24px rgba(0,0,0,0.3); --shadow-glow: 0 0 30px rgba(0,212,170,0.08); --navbar-bg: rgba(11,17,32,0.85); --table-head-bg: rgba(0,0,0,0.25); --row-hover: rgba(0,212,170,0.03); --new-row-bg: rgba(0,212,170,0.06); --overlay-bg: rgba(0,0,0,0.6); --info-box-bg: rgba(0,212,170,0.06); --info-box-border: rgba(0,212,170,0.15); --chip-bg: transparent; --toast-bg: #1a2332; --modal-bg: #1a2332; --spinner-track: rgba(11,17,32,0.2); --spinner-top: #0b1120; --spinner-accent-track: rgba(0,212,170,0.2); --radius: 8px; --radius-lg: 14px; }
     [data-theme="light"] { --bg-primary: #f0f4f8; --bg-secondary: #e2e8f0; --bg-card: #ffffff; --bg-card-hover: #f8fafc; --bg-input: #f1f5f9; --border: #cbd5e1; --border-focus: #0d9488; --accent: #0d9488; --accent-dim: rgba(13,148,136,0.12); --accent-glow: rgba(13,148,136,0.15); --warning: #d97706; --danger: #dc2626; --info: #2563eb; --success: #059669; --text-primary: #0f172a; --text-secondary: #475569; --text-muted: #94a3b8; --shadow: 0 4px 24px rgba(0,0,0,0.08); --shadow-glow: 0 0 20px rgba(13,148,136,0.06); --navbar-bg: rgba(240,244,248,0.9); --table-head-bg: #f1f5f9; --row-hover: rgba(13,148,136,0.04); --new-row-bg: rgba(13,148,136,0.06); --overlay-bg: rgba(0,0,0,0.3); --info-box-bg: rgba(13,148,136,0.05); --info-box-border: rgba(13,148,136,0.15); --chip-bg: #ffffff; --toast-bg: #ffffff; --modal-bg: #ffffff; --spinner-track: rgba(255,255,255,0.4); --spinner-top: #ffffff; --spinner-accent-track: rgba(13,148,136,0.2); --radius: 8px; --radius-lg: 14px; }
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -203,7 +203,7 @@
 </head>
 <body>
 
-  <!-- AUTH -->
+  <!-- AUTH (sama seperti sebelumnya) -->
   <div class="auth-screen" id="authScreen">
     <div class="auth-card">
       <div class="auth-logo"><div class="auth-logo-icon"><i class="fas fa-microchip"></i></div><div class="auth-logo-text">Order<span>Komponen</span></div></div>
@@ -335,6 +335,7 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <script>
+    // ===== Firebase dan konfigurasi (sama) =====
     const firebaseConfig = {
       apiKey: "AIzaSyC-xFWRqV21RDdsxhLuP5jUfvDiPVPT5yQ",
       authDomain: "serveronline62-6deca.firebaseapp.com",
@@ -363,6 +364,7 @@
     function getAktifOrders(){return allOrders.filter(function(o){return(o['STATUS']||'').toUpperCase()!=='FINISH';});}
     function getRiwayatOrders(){return allOrders.filter(function(o){return(o['STATUS']||'').toUpperCase()==='FINISH';});}
 
+    // ===== Fungsi auth dan umum (sama) =====
     function switchAuthTab(t,b){document.querySelectorAll('.auth-tab').forEach(function(x){x.classList.remove('active');});document.querySelectorAll('.auth-form').forEach(function(x){x.classList.remove('active');});b.classList.add('active');document.getElementById(t==='login'?'loginForm':'registerForm').classList.add('active');hideAuthErr();}
     function showAuthErr(m){document.getElementById('authErrorText').textContent=m;document.getElementById('authError').classList.add('show');}
     function hideAuthErr(){document.getElementById('authError').classList.remove('show');}
@@ -457,9 +459,9 @@
       });
     }
 
-    // ===========================================
-    // RENDER AKTIF TABLE (No.Order via modal)
-    // ===========================================
+    // ============================================================
+    // RENDER AKTIF TABLE (No.Order buka modal, fokus ke input)
+    // ============================================================
     function renderAktifTable() {
       const tb = document.getElementById('tableBody');
       const es = document.getElementById('emptyState');
@@ -511,6 +513,7 @@
         const k = o['Keterangan Pemenuhan'] || '';
         const docId = o._docId;
 
+        // PERUBAHAN: No. Order menggunakan openEditModal dengan parameter 'noOrder'
         h += '<tr class="' + (isNew ? 'new-row' : '') + '">' +
           '<td>' + (i + 1) + '</td>' +
           '<td><span class="status-badge ' + sc + '"><span class="status-dot"></span>' + escapeHtml(s) + '</span></td>' +
@@ -527,7 +530,8 @@
           '<td class="name-cell">' + escapeHtml(o['NAMA KONSUMEN'] || '') + '</td>' +
           '<td>' + escapeHtml(o['NO. HP'] || '') + '</td>' +
           '<td class="editable-cell" onclick="openEditModal(\'' + docId + '\')">' + formatDateDisplay(to) + '</td>' +
-          '<td class="editable-cell" onclick="openEditModal(\'' + docId + '\')" style="color:var(--accent);font-weight:600;">' + escapeHtml(no || '-') + '</td>' +
+          // No. Order: panggil openEditModal dengan focusField 'noOrder'
+          '<td class="editable-cell" onclick="openEditModal(\'' + docId + '\', \'noOrder\')" style="color:var(--accent);font-weight:600;">' + escapeHtml(no || '-') + '</td>' +
           '<td class="editable-cell" onclick="openEditModal(\'' + docId + '\')">' + escapeHtml(k || '-') + '</td>' +
           '<td><div class="action-btns">' +
           '<button class="action-btn" onclick="openEditModal(\'' + docId + '\')"><i class="fas fa-pen"></i></button>' +
@@ -547,7 +551,7 @@
     }
 
     // ===========================================
-    // RENDER RIWAYAT
+    // RENDER RIWAYAT (tetap)
     // ===========================================
     function renderRiwayatTable() {
       const tb = document.getElementById('riwayatBody');
@@ -627,27 +631,58 @@
     function updateAllStats(){const aktif=getAktifOrders(),riwayat=getRiwayatOrders();animateCounter('statTotal',aktif.length);animateCounter('statPending',aktif.filter(function(o){return(o['STATUS']||'').toUpperCase()==='PENDING';}).length);animateCounter('statProses',aktif.filter(function(o){return(o['STATUS']||'').toUpperCase()==='PROSES';}).length);animateCounter('statReady',aktif.filter(function(o){return(o['STATUS']||'').toUpperCase()==='READY';}).length);animateCounter('statRiwayat',riwayat.length);document.getElementById('tabCountAktif').textContent=aktif.length;document.getElementById('tabCountRiwayat').textContent=riwayat.length;}
     function animateCounter(id,t){const el=document.getElementById(id);let c=parseInt(el.textContent)||0;if(c===t)return;const s=t>c?1:-1;let v=c;const tm=setInterval(function(){v+=s;el.textContent=v;if(v===t)clearInterval(tm);},30);}
 
-    function openEditModal(docId){const o=allOrders.find(function(x){return x._docId===docId;});if(!o)return;if((o['STATUS']||'').toUpperCase()==='FINISH'&&!isAdmin){showToast('Hanya Admin yang bisa mengubah data riwayat.','warning');return;}document.getElementById('modalRowIndex').value=docId;document.getElementById('modalStatus').value=(o['STATUS']||'PENDING').toUpperCase();document.getElementById('modalTglOrder').value=o['TGL Order']||'';document.getElementById('modalNoOrder').value=o['No. Order']||'';document.getElementById('modalKeterangan').value=o['Keterangan Pemenuhan']||'';document.getElementById('modalOrderNo').textContent='#'+(o['No. Order']||'-');document.getElementById('modalPartInfo').textContent=(o['NAMA PART']||'-')+' | '+(o['NAMA KONSUMEN']||'-');document.getElementById('editModal').classList.add('active');}
+    // ============================================================
+    // openEditModal dengan parameter focusField
+    // ============================================================
+    function openEditModal(docId, focusField) {
+      const o = allOrders.find(function(x){ return x._docId === docId; });
+      if (!o) return;
+      if ((o['STATUS']||'').toUpperCase() === 'FINISH' && !isAdmin) {
+        showToast('Hanya Admin yang bisa mengubah data riwayat.','warning');
+        return;
+      }
+      document.getElementById('modalRowIndex').value = docId;
+      document.getElementById('modalStatus').value = (o['STATUS'] || 'PENDING').toUpperCase();
+      document.getElementById('modalTglOrder').value = o['TGL Order'] || '';
+      document.getElementById('modalNoOrder').value = o['No. Order'] || '';
+      document.getElementById('modalKeterangan').value = o['Keterangan Pemenuhan'] || '';
+      document.getElementById('modalOrderNo').textContent = '#' + (o['No. Order'] || '-');
+      document.getElementById('modalPartInfo').textContent = (o['NAMA PART'] || '-') + ' | ' + (o['NAMA KONSUMEN'] || '-');
 
-    // ============================================
-    // PERBAIKAN: submitUpdate dengan update lokal
-    // ============================================
+      const modal = document.getElementById('editModal');
+      modal.classList.add('active');
+
+      // Jika focusField adalah 'noOrder', fokus ke input No. Order
+      if (focusField === 'noOrder') {
+        setTimeout(function() {
+          document.getElementById('modalNoOrder').focus();
+          document.getElementById('modalNoOrder').select();
+        }, 300);
+      } else {
+        // Bisa juga fokus ke field lain, misalnya textarea keterangan jika diinginkan
+        // Biarkan default (tidak fokus)
+      }
+    }
+
+    // ============================================================
+    // submitUpdate dengan update lokal
+    // ============================================================
     function submitUpdate(){
-      const docId=document.getElementById('modalRowIndex').value;
-      const updates={
-        'STATUS':document.getElementById('modalStatus').value,
-        'TGL Order':document.getElementById('modalTglOrder').value,
-        'No. Order':document.getElementById('modalNoOrder').value,
-        'Keterangan Pemenuhan':document.getElementById('modalKeterangan').value
+      const docId = document.getElementById('modalRowIndex').value;
+      const updates = {
+        'STATUS': document.getElementById('modalStatus').value,
+        'TGL Order': document.getElementById('modalTglOrder').value,
+        'No. Order': document.getElementById('modalNoOrder').value,
+        'Keterangan Pemenuhan': document.getElementById('modalKeterangan').value
       };
-      const sb=document.getElementById('modalSaveBtn');
-      sb.disabled=true; sb.innerHTML='<div class="spinner"></div>';
+      const sb = document.getElementById('modalSaveBtn');
+      sb.disabled = true; sb.innerHTML = '<div class="spinner"></div>';
       db.collection(ORDERS_COL).doc(docId).update(updates)
         .then(function(){
-          sb.disabled=false; sb.innerHTML='<i class="fas fa-save"></i> Simpan';
-          // Update lokal segera
+          sb.disabled = false; sb.innerHTML = '<i class="fas fa-save"></i> Simpan';
+          // Update lokal
           const order = allOrders.find(o => o._docId === docId);
-          if(order){
+          if (order) {
             Object.assign(order, updates);
           }
           renderAll(); // refresh tampilan
@@ -655,7 +690,7 @@
           showToast('Berhasil diupdate!','success');
         })
         .catch(function(er){
-          sb.disabled=false; sb.innerHTML='<i class="fas fa-save"></i> Simpan';
+          sb.disabled = false; sb.innerHTML = '<i class="fas fa-save"></i> Simpan';
           showToast('Error: '+er.message,'error');
         });
     }
