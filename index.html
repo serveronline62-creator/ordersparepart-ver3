@@ -487,7 +487,7 @@
     }
 
     // ============================================================
-    // PERBAIKAN PRESISI: INLINE EDIT DENGAN TAMPILAN LANGSUNG & PERMANEN
+    // PERBAIKAN FINAL: INLINE EDIT LANGSUNG TAMPIL & PERMANEN
     // ============================================================
     function startInlineEdit(td){
       const span = td.querySelector('span:first-child');
@@ -509,7 +509,7 @@
       input.focus();
       input.select();
 
-      // Fungsi untuk menyimpan (langsung tampilkan nilai baru)
+      // Fungsi untuk menyimpan
       const save = () => {
         const val = input.value.trim();
         // Buat span baru dengan nilai baru (langsung tampil)
@@ -523,16 +523,15 @@
           allOrders[orderIndex][field] = val;
         }
         
-        // Jika field adalah TANGGAL SELESAI, perbarui kolom Lama Pengiriman di baris terkait
+        // Jika field adalah TANGGAL SELESAI, perbarui kolom Lama Pengiriman
         if (field === 'TANGGAL SELESAI') {
           const tr = td.closest('tr');
-          // Cari kolom Tgl Order (indeks 15, karena 0-based)
           const tglOrderCell = tr.querySelector('td:nth-child(15)');
           const tglOrderText = tglOrderCell ? tglOrderCell.textContent.trim() : '';
           const tglOrder = (tglOrderText !== '-') ? tglOrderText : '';
           const tglSelesai = val;
           const lama = hitungLamaPengiriman(tglOrder, tglSelesai);
-          const lamaCell = tr.querySelector('td:nth-child(18)'); // indeks Lama Pengiriman
+          const lamaCell = tr.querySelector('td:nth-child(18)');
           if (lamaCell) {
             lamaCell.textContent = lama;
             lamaCell.style.color = 'var(--accent)';
@@ -540,14 +539,15 @@
           }
         }
         
-        // Kirim update ke Firebase di background
+        // Kirim update ke Firebase di background (tanpa reload tabel)
         if (docId && field) {
           const updateObj = {};
           updateObj[field] = val;
           db.collection('orders').doc(docId).update(updateObj)
             .then(() => {
+              // Tidak perlu loadOrders, karena DOM sudah diperbarui.
+              // Hanya tampilkan notifikasi sukses.
               showToast(`${field} berhasil diupdate!`, 'success');
-              // Tidak perlu reload tabel, karena DOM sudah diperbarui.
             })
             .catch(er => {
               showToast('Error: ' + er.message, 'error');
@@ -580,7 +580,7 @@
         }
       };
 
-      // Fungsi untuk batal (kembalikan nilai lama)
+      // Fungsi untuk batal
       const cancel = () => {
         const newSpan = document.createElement('span');
         newSpan.textContent = oldValue || '-';
@@ -601,7 +601,7 @@
       });
     }
 
-    // --- OTHER FUNCTIONS (edit modal, delete, stats, export, etc.) ---
+    // --- OTHER FUNCTIONS ---
     function showDeleteWarning(){ showToast('Hapus hanya untuk status FINISH.','warning'); }
 
     function openEditModal(docId){
