@@ -11,7 +11,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <style>
-    /* --- style sama seperti sebelumnya (tidak diubah) --- */
     :root, [data-theme="dark"] { --bg-primary: #0b1120; --bg-secondary: #111827; --bg-card: #1a2332; --bg-card-hover: #1e293b; --bg-input: #0f172a; --border: #1e3a5f; --border-focus: #00d4aa; --accent: #00d4aa; --accent-dim: rgba(0,212,170,0.15); --accent-glow: rgba(0,212,170,0.3); --warning: #f59e0b; --danger: #ef4444; --info: #3b82f6; --success: #10b981; --text-primary: #f1f5f9; --text-secondary: #94a3b8; --text-muted: #64748b; --shadow: 0 4px 24px rgba(0,0,0,0.3); --shadow-glow: 0 0 30px rgba(0,212,170,0.08); --navbar-bg: rgba(11,17,32,0.85); --table-head-bg: rgba(0,0,0,0.25); --row-hover: rgba(0,212,170,0.03); --new-row-bg: rgba(0,212,170,0.06); --overlay-bg: rgba(0,0,0,0.6); --info-box-bg: rgba(0,212,170,0.06); --info-box-border: rgba(0,212,170,0.15); --chip-bg: transparent; --toast-bg: #1a2332; --modal-bg: #1a2332; --spinner-track: rgba(11,17,32,0.2); --spinner-top: #0b1120; --spinner-accent-track: rgba(0,212,170,0.2); --radius: 8px; --radius-lg: 14px; }
     [data-theme="light"] { --bg-primary: #f0f4f8; --bg-secondary: #e2e8f0; --bg-card: #ffffff; --bg-card-hover: #f8fafc; --bg-input: #f1f5f9; --border: #cbd5e1; --border-focus: #0d9488; --accent: #0d9488; --accent-dim: rgba(13,148,136,0.12); --accent-glow: rgba(13,148,136,0.15); --warning: #d97706; --danger: #dc2626; --info: #2563eb; --success: #059669; --text-primary: #0f172a; --text-secondary: #475569; --text-muted: #94a3b8; --shadow: 0 4px 24px rgba(0,0,0,0.08); --shadow-glow: 0 0 20px rgba(13,148,136,0.06); --navbar-bg: rgba(240,244,248,0.9); --table-head-bg: #f1f5f9; --row-hover: rgba(13,148,136,0.04); --new-row-bg: rgba(13,148,136,0.06); --overlay-bg: rgba(0,0,0,0.3); --info-box-bg: rgba(13,148,136,0.05); --info-box-border: rgba(13,148,136,0.15); --chip-bg: #ffffff; --toast-bg: #ffffff; --modal-bg: #ffffff; --spinner-track: rgba(255,255,255,0.4); --spinner-top: #ffffff; --spinner-accent-track: rgba(13,148,136,0.2); --radius: 8px; --radius-lg: 14px; }
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -356,6 +355,22 @@
     function loadFromCache(){return openIDB().then(function(idb){return new Promise(function(res,rej){const tx=idb.transaction(CACHE_STORE,'readonly'),s=tx.objectStore(CACHE_STORE),r=s.getAll();r.onsuccess=function(){res(r.result||[]);};r.onerror=function(){rej([]);};});}).catch(function(){return[];});}
     function removeCacheItem(id){openIDB().then(function(idb){idb.transaction(CACHE_STORE,'readwrite').objectStore(CACHE_STORE).delete(id);}).catch(function(){});}
 
+    // Fungsi untuk update cache secara manual setelah update
+    function updateCacheItem(docId, data) {
+      openIDB().then(function(idb) {
+        const tx = idb.transaction(CACHE_STORE, 'readwrite');
+        const store = tx.objectStore(CACHE_STORE);
+        // Ambil data lama, lalu perbarui
+        const getReq = store.get(docId);
+        getReq.onsuccess = function() {
+          const existing = getReq.result || {};
+          // Gabungkan dengan data baru
+          const updated = Object.assign({}, existing, data, { _docId: docId });
+          store.put(updated);
+        };
+      }).catch(function(){});
+    }
+
     let allOrders=[], currentFilter='all', newRowIndices=new Set(),
         searchDebounceTimer=null, searchRiwayatTimer=null,
         isFirstLoad=true, realtimeUnsubscribe=null, currentMainTab='aktif';
@@ -407,7 +422,7 @@
     function resetForm(){document.getElementById('orderForm').reset();setDefaultDate();}
     function setDefaultDate(){const t=new Date().toISOString().split('T')[0],d=document.getElementById('inpTglPengajuan');if(d)d.value=t;}
 
-    // === handleSubmit (tanpa generate No. Order) ===
+    // ===== handleSubmit (tanpa generate No. Order) =====
     function handleSubmit(e){
       e.preventDefault();
       const f=document.getElementById('orderForm'), fd=new FormData(f), d={};
@@ -630,29 +645,28 @@
     function openEditModal(docId){const o=allOrders.find(function(x){return x._docId===docId;});if(!o)return;if((o['STATUS']||'').toUpperCase()==='FINISH'&&!isAdmin){showToast('Hanya Admin yang bisa mengubah data riwayat.','warning');return;}document.getElementById('modalRowIndex').value=docId;document.getElementById('modalStatus').value=(o['STATUS']||'PENDING').toUpperCase();document.getElementById('modalTglOrder').value=o['TGL Order']||'';document.getElementById('modalNoOrder').value=o['No. Order']||'';document.getElementById('modalKeterangan').value=o['Keterangan Pemenuhan']||'';document.getElementById('modalOrderNo').textContent='#'+(o['No. Order']||'-');document.getElementById('modalPartInfo').textContent=(o['NAMA PART']||'-')+' | '+(o['NAMA KONSUMEN']||'-');document.getElementById('editModal').classList.add('active');}
 
     // ============================================
-    // PERBAIKAN: submitUpdate - update lokal & cache
+    // PERBAIKAN: submitUpdate dengan update lokal dan cache
     // ============================================
     function submitUpdate(){
       const docId=document.getElementById('modalRowIndex').value;
-      const statusVal = document.getElementById('modalStatus').value;
       const updates={
-        'STATUS': statusVal,
-        'TGL Order': document.getElementById('modalTglOrder').value,
-        'No. Order': document.getElementById('modalNoOrder').value,
-        'Keterangan Pemenuhan': document.getElementById('modalKeterangan').value
+        'STATUS':document.getElementById('modalStatus').value,
+        'TGL Order':document.getElementById('modalTglOrder').value,
+        'No. Order':document.getElementById('modalNoOrder').value,
+        'Keterangan Pemenuhan':document.getElementById('modalKeterangan').value
       };
       const sb=document.getElementById('modalSaveBtn');
       sb.disabled=true; sb.innerHTML='<div class="spinner"></div>';
       db.collection(ORDERS_COL).doc(docId).update(updates)
         .then(function(){
           sb.disabled=false; sb.innerHTML='<i class="fas fa-save"></i> Simpan';
-          // Update data lokal
+          // Update lokal di allOrders
           const order = allOrders.find(o => o._docId === docId);
           if(order){
             Object.assign(order, updates);
           }
-          // Perbarui cache (IndexedDB)
-          cacheToLocal(allOrders);
+          // Update cache juga
+          updateCacheItem(docId, updates);
           // Render ulang
           renderAll();
           closeEditModal();
