@@ -1793,7 +1793,6 @@
                   <th>Status</th>
                   <th>Teknisi</th>
                   <th>Tgl Pengajuan</th>
-                  <!-- KOLOM DIPINDAHKAN KE SINI -->
                   <th>No. Order</th>
                   <th>Order ke Pabrik</th>
                   <th>No. Service</th>
@@ -1840,7 +1839,6 @@
                   <th>Status</th>
                   <th>Teknisi</th>
                   <th>Tgl Pengajuan</th>
-                  <!-- KOLOM DIPINDAHKAN KE SINI -->
                   <th>No. Order</th>
                   <th>Order ke Pabrik</th>
                   <th>No. Service</th>
@@ -1915,7 +1913,7 @@
         <div style="background:rgba(128,128,128,0.1);border-radius:var(--radius);padding:0.85rem 1rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><span style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--accent);font-weight:700;" id="modalOrderNo"></span><span style="color:var(--text-muted);">|</span><span style="font-size:0.78rem;color:var(--text-secondary);" id="modalPartInfo"></span></div>
         <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="modalStatus"><option value="PENDING">PENDING</option><option value="PROSES">PROSES</option><option value="READY">READY</option><option value="FINISH">FINISH</option></select></div>
         <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> Tgl Order</span></label><input class="form-input" type="date" id="modalTglOrder" /></div>
-        <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> No. Order</span></label><input class="form-input" type="text" id="modalNoOrder" /></div>
+        <!-- FIELD No. Order DIHAPUS -->
         <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> Order ke Pabrik</span></label><input class="form-input" type="text" id="modalOrderPabrik" /></div>
         <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> Keterangan</span></label><textarea class="form-textarea" id="modalKeterangan"></textarea></div>
       </div>
@@ -2365,7 +2363,7 @@
         });
     }
 
-    // ===== HANDLE SUBMIT (tambahkan ORDER KE PABRIK) =====
+    // ===== HANDLE SUBMIT =====
     function handleSubmit(e) {
       e.preventDefault();
       var f = document.getElementById('orderForm'),
@@ -2592,7 +2590,6 @@
           '<td><span class="status-badge ' + sc + '"><span class="status-dot"></span>' + escapeHtml(s) + '</span></td>' +
           '<td class="name-cell">' + escapeHtml(o['TEKNISI'] || '') + '</td>' +
           '<td>' + formatDateDisplay(o['TGL PENGAJUAN ORD'] || '') + '</td>' +
-          // KOLOM DIPINDAHKAN KE SINI
           '<td class="editable-cell" ondblclick="editNoOrder(\'' + o._docId +
           '\', this)" title="Double‑klik untuk edit" style="color:var(--accent);font-weight:600;cursor:text;">' +
           escapeHtml(no || '-') + '</td>' +
@@ -2673,7 +2670,6 @@
           '<td><span class="status-badge finish"><span class="status-dot"></span>FINISH</span></td>' +
           '<td class="name-cell">' + escapeHtml(o['TEKNISI'] || '') + '</td>' +
           '<td>' + formatDateDisplay(o['TGL PENGAJUAN ORD'] || '') + '</td>' +
-          // KOLOM DIPINDAHKAN KE SINI
           '<td class="' + cellClass + '" ' +
           (canEdit ? 'ondblclick="editNoOrder(\'' + o._docId + '\', this)" title="Double‑klik untuk edit"' : '') +
           ' style="' + (canEdit ? 'cursor:text;' : '') + 'color:var(--info);font-weight:600;">' +
@@ -2745,7 +2741,7 @@
       document.getElementById('modalRowIndex').value = docId;
       document.getElementById('modalStatus').value = (o['STATUS'] || 'PENDING').toUpperCase();
       document.getElementById('modalTglOrder').value = o['TGL Order'] || '';
-      document.getElementById('modalNoOrder').value = o['No. Order'] || '';
+      // No. Order tidak diisi karena tidak ada field
       document.getElementById('modalOrderPabrik').value = o['ORDER KE PABRIK'] || '';
       document.getElementById('modalKeterangan').value = o['Keterangan Pemenuhan'] || '';
       document.getElementById('modalOrderNo').textContent = '#' + (o['No. Order'] || '-');
@@ -2758,7 +2754,7 @@
       var updates = {
         'STATUS': document.getElementById('modalStatus').value,
         'TGL Order': document.getElementById('modalTglOrder').value,
-        'No. Order': document.getElementById('modalNoOrder').value,
+        // No. Order tidak diupdate
         'ORDER KE PABRIK': document.getElementById('modalOrderPabrik').value,
         'Keterangan Pemenuhan': document.getElementById('modalKeterangan').value
       };
@@ -2822,7 +2818,7 @@
       b.innerHTML = '<div class="spinner"></div>';
       try {
         var eh = ['No', 'Status', 'Teknisi', 'Tgl Pengajuan',
-          'No. Order', 'Order ke Pabrik', // <-- dipindah ke sini
+          'No. Order', 'Order ke Pabrik',
           'No. Service', 'Type (IDNO)', 'No. Serie', 'No Gudang',
           'Nama Part', 'QTY', 'Prod.', 'Layanan', 'Nama Konsumen', 'No. HP', 'Tgl Order', 'Keterangan'
         ];
@@ -2905,7 +2901,7 @@
     document.getElementById('inputModal').addEventListener('click', function(e) { if (e.target === this) closeInputModal(); });
     document.getElementById('editModal').addEventListener('click', function(e) { if (e.target === this) closeEditModal(); });
 
-    console.log('✅ Aplikasi siap - kolom No. Order & Order ke Pabrik dipindahkan setelah Tgl Pengajuan.');
+    console.log('✅ Aplikasi siap - No. Order dihilangkan dari modal edit.');
   </script>
 </body>
 </html>
