@@ -15,7 +15,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js">
   </script>
   <style>
-    /* ===== SEMUA CSS SAMA, DENGAN PERUBAHAN PADA .locked-cell ===== */
+    /* ===== CSS LENGKAP ===== */
     :root,
     [data-theme="dark"] {
       --bg-primary: #0b1120;
@@ -89,7 +89,6 @@
       --radius: 8px;
       --radius-lg: 14px;
     }
-    /* ===== CSS LAINNYA SAMA (tidak diubah) ===== */
     *,
     *::before,
     *::after {
@@ -1168,16 +1167,15 @@
       color: var(--accent);
     }
 
-    /* ===== PERUBAHAN UTAMA: LOCKED CELL MENJADI BIRU ===== */
+    /* ===== LOCKED CELL - WARNA BIRU ===== */
     .data-table tbody td.locked-cell {
       cursor: default !important;
-      color: var(--info) !important;  /* Warna biru */
-      opacity: 1;                    /* Hilangkan efek redup */
+      color: var(--info) !important;
+      opacity: 1;
     }
     .data-table tbody td.locked-cell::after {
       display: none;
     }
-    /* ======================================================== */
 
     .data-table tbody tr.new-row {
       background: var(--new-row-bg) !important;
@@ -1682,15 +1680,11 @@
         font-size: 0.78rem;
       }
     }
-
-    /* ===== SISA CSS TIDAK BERUBAH ===== */
-    /* ... */
   </style>
 </head>
 <body>
 
   <!-- ==================== AUTH ==================== -->
-  <!-- (sama seperti sebelumnya, tidak diubah) -->
   <div class="auth-screen" id="authScreen">
     <div class="auth-card">
       <div class="auth-logo">
@@ -1741,11 +1735,209 @@
   </div>
 
   <!-- ==================== APP ==================== -->
-  <!-- (semua konten HTML sama seperti sebelumnya) -->
-  <!-- ============================================ -->
+  <div class="app-wrapper" id="appWrapper">
+    <nav class="navbar">
+      <div class="navbar-inner">
+        <a class="logo" href="#"><div class="logo-icon"><i class="fas fa-microchip"></i></div><div class="logo-text">Order<span>Komponen</span></div></a>
+        <div class="nav-right">
+          <button class="btn btn-primary btn-sm" onclick="openInputModal()"><i class="fas fa-plus-circle"></i> Input Order Baru</button>
+          <span class="last-sync" id="lastSync">--:--:--</span>
+          <div class="sync-dot" id="syncDot"></div>
+          <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-sun icon-sun"></i><i class="fas fa-moon icon-moon"></i></button>
+          <div class="user-menu" id="userMenu">
+            <button class="user-btn" onclick="toggleUserDD()"><div class="user-avatar" id="userAvatar">?</div><span class="ub-name" id="userName">User</span><i class="fas fa-chevron-down" style="font-size:0.6rem;margin-left:2px;"></i></button>
+            <div class="user-dropdown" id="userDropdown">
+              <div class="udh"><div class="udn" id="udName">User <span class="role-badge user" id="udRole">USER</span></div><div class="ude" id="udEmail">-</div></div>
+              <button class="udi danger" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="main-container">
+      <div class="main-tabs">
+        <button class="main-tab active" onclick="switchMainTab('aktif', this)"><i class="fas fa-tasks"></i> Order Aktif <span class="tab-count" id="tabCountAktif">0</span></button>
+        <button class="main-tab" onclick="switchMainTab('riwayat', this)"><i class="fas fa-history"></i> Riwayat Order <span class="tab-count" id="tabCountRiwayat">0</span></button>
+      </div>
+
+      <!-- ===== TAB AKTIF ===== -->
+      <div class="tab-panel active" id="panelAktif">
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-icon total"><i class="fas fa-clipboard-list"></i></div><div><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Aktif</div></div></div>
+          <div class="stat-card"><div class="stat-icon pending"><i class="fas fa-clock"></i></div><div><div class="stat-value" id="statPending">0</div><div class="stat-label">Pending</div></div></div>
+          <div class="stat-card"><div class="stat-icon proses"><i class="fas fa-spinner"></i></div><div><div class="stat-value" id="statProses">0</div><div class="stat-label">Proses</div></div></div>
+          <div class="stat-card"><div class="stat-icon ready"><i class="fas fa-box"></i></div><div><div class="stat-value" id="statReady">0</div><div class="stat-label">Ready</div></div></div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-toolbar">
+            <h2><i class="fas fa-tasks"></i> Order Aktif</h2>
+            <div class="toolbar-right">
+              <div class="filter-chips">
+                <button class="chip active" onclick="filterStatus('all',this)">Semua</button>
+                <button class="chip" onclick="filterStatus('PENDING',this)">PENDING</button>
+                <button class="chip" onclick="filterStatus('PROSES',this)">PROSES</button>
+                <button class="chip" onclick="filterStatus('READY',this)">READY</button>
+              </div>
+              <div class="search-box"><i class="fas fa-search"></i><input type="text" placeholder="Cari order..." id="searchInput" oninput="debouncedSearch()" /></div>
+              <button class="btn btn-download btn-sm" onclick="downloadExcel('aktif')" id="btnDownload"><i class="fas fa-file-excel"></i> Download</button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <div class="table-loading-skeleton" id="tableSkeleton">
+              <div class="skeleton-row"><div class="skeleton-cell" style="width:30px;"></div><div class="skeleton-cell" style="width:70px;"></div><div class="skeleton-cell" style="width:120px;"></div><div class="skeleton-cell" style="flex:1;"></div></div>
+              <p style="color:var(--text-muted);font-size:0.82rem;margin-top:0.5rem;">Memuat data...</p>
+            </div>
+            <table class="data-table" id="dataTableEl" style="display:none;">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Status</th>
+                  <th>Teknisi</th>
+                  <th>Tgl Pengajuan</th>
+                  <th>No. Service</th>
+                  <th>Type (IDNO)</th>
+                  <th>No. Serie</th>
+                  <th>No Gudang</th>
+                  <th>Nama Part</th>
+                  <th>QTY</th>
+                  <th>Prod.</th>
+                  <th>Layanan</th>
+                  <th>Nama Konsumen</th>
+                  <th>No. HP</th>
+                  <th>Tgl Order</th>
+                  <th>TGL TERIMA PART</th>
+                  <!-- ===== HEAD KOLOM DIUBAH MENJADI "Jumlah Hari" ===== -->
+                  <th>Jumlah Hari</th>
+                  <th>Order ke Pabrik</th>
+                  <th>Keterangan</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="emptyState" style="display:none;"><i class="fas fa-inbox"></i><p>Tidak ada order aktif.</p></div>
+          <div class="table-footer" id="tableFooter" style="display:none;"><span>Menampilkan <strong class="row-count" id="rowCount">0</strong> dari <strong class="row-count" id="rowTotal">0</strong> order</span><span style="display:flex;align-items:center;gap:6px;"><span class="sync-dot" style="width:6px;height:6px;"></span> Realtime</span></div>
+        </div>
+      </div>
+
+      <!-- ===== TAB RIWAYAT ===== -->
+      <div class="tab-panel" id="panelRiwayat">
+        <div class="riwayat-stats">
+          <div class="riwayat-stat"><div class="rs-icon"><i class="fas fa-check-double"></i></div><div><div class="rs-val" id="statRiwayat">0</div><div class="rs-lbl">Total Selesai</div></div></div>
+        </div>
+        <div class="table-card">
+          <div class="table-toolbar">
+            <h2><i class="fas fa-history" style="color:var(--info);"></i> Riwayat Order (Finish)</h2>
+            <div class="toolbar-right">
+              <div class="search-box"><i class="fas fa-search"></i><input type="text" placeholder="Cari riwayat..." id="searchRiwayat" oninput="debouncedSearchRiwayat()" /></div>
+              <button class="btn btn-download btn-sm" onclick="downloadExcel('riwayat')" id="btnDownloadRiwayat"><i class="fas fa-file-excel"></i> Download</button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table" id="riwayatTableEl" style="display:none;">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Status</th>
+                  <th>Teknisi</th>
+                  <th>Tgl Pengajuan</th>
+                  <th>No. Service</th>
+                  <th>Type (IDNO)</th>
+                  <th>No. Serie</th>
+                  <th>No Gudang</th>
+                  <th>Nama Part</th>
+                  <th>QTY</th>
+                  <th>Prod.</th>
+                  <th>Layanan</th>
+                  <th>Nama Konsumen</th>
+                  <th>No. HP</th>
+                  <th>Tgl Order</th>
+                  <th>TGL TERIMA PART</th>
+                  <!-- ===== HEAD KOLOM DIUBAH MENJADI "Jumlah Hari" ===== -->
+                  <th>Jumlah Hari</th>
+                  <th>Order ke Pabrik</th>
+                  <th>Keterangan</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="riwayatBody"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="emptyRiwayat" style="display:none;"><i class="fas fa-archive"></i><p>Belum ada riwayat order.</p></div>
+          <div class="table-footer" id="riwayatFooter" style="display:none;"><span>Menampilkan <strong class="row-count" id="riwayatCount">0</strong> riwayat order</span><span style="display:flex;align-items:center;gap:6px;"><span class="sync-dot" style="width:6px;height:6px;"></span> Realtime</span></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== MODAL INPUT ==================== -->
+  <div class="modal-overlay" id="inputModal">
+    <div class="modal modal-lg" style="position:relative;">
+      <div class="loading-overlay" id="formLoading"><div class="spinner"></div></div>
+      <div class="modal-header"><h3><i class="fas fa-file-invoice"></i> Input Order Komponen</h3><button class="modal-close" onclick="closeInputModal()"><i class="fas fa-times"></i></button></div>
+      <div class="modal-body">
+        <form id="orderForm" onsubmit="handleSubmit(event)" novalidate>
+          <div class="form-section-title">Informasi Teknisi & Service</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Teknisi <span class="required">*</span></label><select class="form-select" name="TEKNISI" required><option value="">-- Pilih --</option><option value="YANDRI OTTU">YANDRI OTTU</option><option value="HARMINDO LAMMA">HARMINDO LAMMA</option><option value="INOSENCIUS FA'OT">INOSENCIUS FA'OT</option><option value="RIZALDI ABDULLAH">RIZALDI ABDULLAH</option><option value="KRISTIAN OPENG">KRISTIAN OPENG</option><option value="MUHAMMAD FAUZI">MUHAMMAD FAUZI</option></select></div>
+            <div class="form-group"><label class="form-label">Tgl Pengajuan <span class="required">*</span></label><input class="form-input" type="date" name="TGL PENGAJUAN ORD" id="inpTglPengajuan" required /></div>
+            <div class="form-group"><label class="form-label">No. Service Case</label><input class="form-input" type="text" name="NO. SERVICE CASE" placeholder="Opsional" /></div>
+          </div>
+          <div class="form-section-title">Informasi Komponen</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Type (IDNO) <span class="required">*</span></label><input class="form-input" type="text" name="TYPE (IDNO)" required /></div>
+            <div class="form-group"><label class="form-label">No. Serie</label><input class="form-input" type="text" name="NO. SERIE" /></div>
+            <div class="form-group"><label class="form-label">No Gudang</label><input class="form-input" type="text" name="NO GUDANG" /></div>
+            <div class="form-group"><label class="form-label">Nama Part <span class="required">*</span></label><input class="form-input" type="text" name="NAMA PART" required /></div>
+            <div class="form-group"><label class="form-label">QTY <span class="required">*</span></label><input class="form-input" type="number" name="QTY" min="1" required /></div>
+            <div class="form-group"><label class="form-label">Prod. <span class="required">*</span></label><select class="form-select" name="PROD." required><option value="">-- Pilih --</option><option value="AV">AV</option><option value="HA">HA</option><option value="EV">EV</option></select></div>
+            <div class="form-group"><label class="form-label">Layanan <span class="required">*</span></label><select class="form-select" name="LAYANAN" required><option value="">-- Pilih --</option><option value="KONSUMEN LANGSUNG">KONSUMEN LANGSUNG</option><option value="KUNJUNGAN TOKO">KUNJUNGAN TOKO</option><option value="KUNJUNGAN CALL">KUNJUNGAN CALL</option><option value="KUNJUNGAN LUAR KOTA">KUNJUNGAN LUAR KOTA</option><option value="LUAR KOTA PSR FLORES">LUAR KOTA PSR FLORES</option></select></div>
+          </div>
+          <div class="form-section-title">Informasi Konsumen</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Nama Konsumen <span class="required">*</span></label><input class="form-input" type="text" name="NAMA KONSUMEN" required /></div>
+            <div class="form-group"><label class="form-label">No. HP <span class="required">*</span></label><input class="form-input" type="tel" name="NO. HP" required /></div>
+          </div>
+          <!-- BAGIAN INFORMASI PENERIMAAN PART TIDAK DITAMPILKAN DI INPUT -->
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" onclick="resetForm()"><i class="fas fa-eraser"></i> Reset</button>
+        <button type="submit" form="orderForm" class="btn btn-primary btn-sm" id="submitBtn"><i class="fas fa-paper-plane"></i> Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL EDIT ==================== -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <div class="modal-header"><h3><i class="fas fa-edit"></i> Edit Order</h3><button class="modal-close" onclick="closeEditModal()"><i class="fas fa-times"></i></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="modalRowIndex" />
+        <div style="background:rgba(128,128,128,0.1);border-radius:var(--radius);padding:0.85rem 1rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><span style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--accent);font-weight:700;" id="modalOrderNo"></span><span style="color:var(--text-muted);">|</span><span style="font-size:0.78rem;color:var(--text-secondary);" id="modalPartInfo"></span></div>
+        <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="modalStatus"><option value="PENDING">PENDING</option><option value="PROSES">PROSES</option><option value="READY">READY</option><option value="FINISH">FINISH</option></select></div>
+        <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> Tgl Order</span></label><input class="form-input" type="date" id="modalTglOrder" /></div>
+        <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> TGL TERIMA PART</span></label><input class="form-input" type="date" id="modalTglTerimaPart" onchange="editHitungJumlahHari()" /></div>
+        <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> Jumlah Hari</span></label><input class="form-input" type="text" id="modalJumlah" readonly style="background:var(--bg-card);cursor:default;font-weight:700;color:var(--accent);" /></div>
+        <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> Order ke Pabrik</span></label><input class="form-input" type="text" id="modalOrderPabrik" /></div>
+        <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> Keterangan</span></label><textarea class="form-textarea" id="modalKeterangan"></textarea></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary btn-sm" onclick="closeEditModal()">Batal</button><button class="btn btn-primary btn-sm" onclick="submitUpdate()" id="modalSaveBtn"><i class="fas fa-save"></i> Simpan</button></div>
+    </div>
+  </div>
+
+  <!-- ==================== SUCCESS OVERLAY ==================== -->
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-card"><div class="success-icon"><i class="fas fa-check"></i></div><h3>Berhasil Disimpan!</h3><p>Data order baru tersimpan dengan status PENDING.</p><button class="btn btn-primary" onclick="closeSuccess()"><i class="fas fa-check"></i> Selesai</button></div>
+  </div>
+
+  <!-- ==================== TOAST ==================== -->
+  <div class="toast-container" id="toastContainer"></div>
 
   <!-- ==================== SCRIPT ==================== -->
-  <!-- (semua script sama, tidak diubah) -->
   <script>
     // ===== FIREBASE =====
     var firebaseConfig = {
@@ -1831,6 +2023,14 @@
       return allOrders.filter(function(o) { return (o['STATUS'] || '').toUpperCase() === 'FINISH'; });
     }
 
+    // ===== FORMAT JUMLAH HARI =====
+    function formatJumlahHari(val) {
+      if (!val || val === '') return '-';
+      var num = parseInt(val, 10);
+      if (isNaN(num) || num <= 0) return '-';
+      return num + ' hari';
+    }
+
     // ===== FUNGSI HITUNG JUMLAH HARI =====
     function editHitungJumlahHari() {
       var modal = document.getElementById('editModal');
@@ -1851,7 +2051,7 @@
       var d2 = new Date(tglTerima);
       var diffTime = Math.abs(d2 - d1);
       var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      target.value = diffDays;
+      target.value = formatJumlahHari(String(diffDays));
     }
 
     // ===== AUTH FUNCTIONS =====
@@ -2323,7 +2523,7 @@
         };
         db.collection(ORDERS_COL).doc(docId).update(updates)
           .then(function() {
-            showToast('TGL TERIMA PART & Jumlah berhasil diupdate!', 'success');
+            showToast('TGL TERIMA PART & Jumlah Hari berhasil diupdate!', 'success');
             var formatted = newValue ? formatDateDisplay(newValue) : '-';
             td.textContent = formatted;
             if (order) {
@@ -2468,7 +2668,8 @@
           '<td class="editable-cell" ondblclick="editTglTerimaPart(\'' + o._docId +
           '\', this)" title="Double‑klik untuk edit" style="cursor:text;">' +
           formatDateDisplay(ttp) + '</td>' +
-          '<td style="font-weight:700;color:var(--accent);">' + escapeHtml(jml || '-') + '</td>' +
+          // ===== TAMPILKAN "X hari" =====
+          '<td style="font-weight:700;color:var(--accent);">' + escapeHtml(formatJumlahHari(jml)) + '</td>' +
           '<td class="editable-cell" ondblclick="editOrderPabrik(\'' + o._docId +
           '\', this)" title="Double‑klik untuk edit" style="cursor:text;">' +
           escapeHtml(op || '-') + '</td>' +
@@ -2552,7 +2753,8 @@
           (canEdit ? 'ondblclick="editTglTerimaPart(\'' + o._docId + '\', this)" title="Double‑klik untuk edit"' : '') +
           ' style="' + (canEdit ? 'cursor:text;' : '') + '">' +
           formatDateDisplay(ttp) + '</td>' +
-          '<td style="font-weight:700;color:var(--info);">' + escapeHtml(jml || '-') + '</td>' +
+          // ===== TAMPILKAN "X hari" =====
+          '<td style="font-weight:700;color:var(--info);">' + escapeHtml(formatJumlahHari(jml)) + '</td>' +
           '<td class="' + cellClass + '" ' +
           (canEdit ? 'ondblclick="editOrderPabrik(\'' + o._docId + '\', this)" title="Double‑klik untuk edit"' : '') +
           ' style="' + (canEdit ? 'cursor:text;' : '') + '">' +
@@ -2609,7 +2811,8 @@
       document.getElementById('modalStatus').value = (o['STATUS'] || 'PENDING').toUpperCase();
       document.getElementById('modalTglOrder').value = o['Tgl Order'] || '';
       document.getElementById('modalTglTerimaPart').value = o['TGL TERIMA PART'] || '';
-      document.getElementById('modalJumlah').value = o['JUMLAH'] || '';
+      var jml = o['JUMLAH'] || '';
+      document.getElementById('modalJumlah').value = formatJumlahHari(jml);
       document.getElementById('modalOrderPabrik').value = o['ORDER KE PABRIK'] || '';
       document.getElementById('modalKeterangan').value = o['Keterangan Pemenuhan'] || '';
       document.getElementById('modalOrderNo').textContent = '#' + (o['No. Order'] || '-');
@@ -2623,7 +2826,7 @@
       var order = allOrders.find(function(o) { return o._docId === docId; });
       var tglPengajuan = order ? order['TGL PENGAJUAN ORD'] : '';
 
-      var jumlah = document.getElementById('modalJumlah').value;
+      var jumlah = '';
       if (tglPengajuan && tglTerima) {
         var d1 = new Date(tglPengajuan);
         var d2 = new Date(tglTerima);
@@ -2702,14 +2905,14 @@
         var eh = ['No', 'Status', 'Teknisi', 'Tgl Pengajuan',
           'No. Service', 'Type (IDNO)', 'No. Serie', 'No Gudang',
           'Nama Part', 'QTY', 'Prod.', 'Layanan', 'Nama Konsumen', 'No. HP',
-          'Tgl Order', 'TGL TERIMA PART', 'Jumlah', 'Order ke Pabrik', 'Keterangan'
+          'Tgl Order', 'TGL TERIMA PART', 'Jumlah Hari', 'Order ke Pabrik', 'Keterangan'
         ];
         var rows = fd.map(function(o, i) {
           return [i + 1, o['STATUS'] || '', o['TEKNISI'] || '', formatDateDisplay(o['TGL PENGAJUAN ORD'] || ''),
             o['NO. SERVICE CASE'] || '', o['TYPE (IDNO)'] || '', o['NO. SERIE'] || '', o['NO GUDANG'] || '',
             o['NAMA PART'] || '', o['QTY'] || '', o['PROD.'] || '', o['LAYANAN'] || '',
             o['NAMA KONSUMEN'] || '', o['NO. HP'] || '', formatDateDisplay(o['Tgl Order'] || ''),
-            formatDateDisplay(o['TGL TERIMA PART'] || ''), o['JUMLAH'] || '',
+            formatDateDisplay(o['TGL TERIMA PART'] || ''), formatJumlahHari(o['JUMLAH'] || ''),
             o['ORDER KE PABRIK'] || '', o['Keterangan Pemenuhan'] || ''
           ];
         });
@@ -2783,7 +2986,7 @@
     document.getElementById('inputModal').addEventListener('click', function(e) { if (e.target === this) closeInputModal(); });
     document.getElementById('editModal').addEventListener('click', function(e) { if (e.target === this) closeEditModal(); });
 
-    console.log('✅ Aplikasi siap - Locked cells berwarna biru.');
+    console.log('✅ Aplikasi siap - Kolom "Jumlah Hari" dengan format "X hari", locked cells berwarna biru.');
   </script>
 </body>
 </html>
