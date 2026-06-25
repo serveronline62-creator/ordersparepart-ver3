@@ -396,6 +396,7 @@
         <li onclick="showPage('pos', this)"><i class="bi bi-cart-plus-fill"></i> Kasir (POS)</li>
         <li onclick="showPage('products', this)"><i class="bi bi-box-seam-fill"></i> Produk</li>
         <li onclick="showPage('product-in-history', this)"><i class="bi bi-arrow-down-circle-fill"></i> Riwayat Produk Masuk</li>
+        <li onclick="showPage('stock-out', this)"><i class="bi bi-arrow-up-circle-fill"></i> Pengeluaran Barang</li>
         <li onclick="showPage('categories', this)"><i class="bi bi-tags-fill"></i> Kategori</li>
       </ul>
       <div class="sidebar-section">Analitik</div>
@@ -550,6 +551,68 @@
         </div>
       </div>
 
+      <!-- ====== STOCK OUT PAGE (PENGELUARAN BARANG) ====== -->
+      <div id="page-stock-out" class="page-content" style="display:none;">
+        <div class="page-header d-flex justify-content-between align-items-center">
+          <div>
+            <h2>Pengeluaran Barang</h2>
+            <p class="mb-0">Mencatat pengeluaran stok (rusak, hilang, pemakaian internal, dll.)</p>
+          </div>
+          <button class="btn btn-success" style="border-radius:10px;" onclick="downloadStockOutExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> Download Excel</button>
+        </div>
+
+        <!-- Form Input Pengeluaran -->
+        <div class="table-container mb-4">
+          <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle"></i> Catat Pengeluaran Barang</h6>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label fw-medium" style="font-size:0.85rem;">Pilih Produk</label>
+              <select class="form-select" id="so-product" style="border-radius:10px; border:1.5px solid var(--border);">
+                <option value="" disabled selected>-- Pilih Produk --</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label fw-medium" style="font-size:0.85rem;">Jumlah Keluar</label>
+              <input type="number" class="form-control" id="so-qty" min="1" placeholder="0" style="border-radius:10px; border:1.5px solid var(--border);">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-medium" style="font-size:0.85rem;">Keterangan</label>
+              <input type="text" class="form-control" id="so-note" placeholder="Misal: rusak, hilang, digunakan" style="border-radius:10px; border:1.5px solid var(--border);">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <button class="btn btn-primary w-100" style="border-radius:10px;" onclick="saveStockOut()"><i class="bi bi-save"></i> Simpan</button>
+            </div>
+          </div>
+          <div id="so-error" class="text-danger mt-2" style="display:none; font-size:0.9rem;"></div>
+        </div>
+
+        <!-- Tabel Riwayat Pengeluaran -->
+        <div class="table-container">
+          <div class="row align-items-end g-3 mb-3">
+            <div class="col-md-3">
+              <label class="form-label fw-medium" style="font-size:0.85rem;">Dari Tanggal</label>
+              <input type="date" id="so-start" class="form-control" style="border-radius:10px;" onchange="renderStockOut()">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-medium" style="font-size:0.85rem;">Sampai Tanggal</label>
+              <input type="date" id="so-end" class="form-control" style="border-radius:10px;" onchange="renderStockOut()">
+            </div>
+            <div class="col-md-6">
+              <div class="form-floating">
+                <input type="text" class="form-control" id="so-search" placeholder="Cari..." oninput="renderStockOut()">
+                <label for="so-search">Cari ID atau Nama Produk...</label>
+              </div>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead><tr><th>Tanggal</th><th>ID Produk</th><th>Nama Produk</th><th>Jumlah Keluar</th><th>Keterangan</th><th>Total Modal (Rp)</th><th>Aksi</th></tr></thead>
+              <tbody id="table-stock-out"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- ====== CATEGORIES PAGE ====== -->
       <div id="page-categories" class="page-content" style="display:none;">
         <div class="page-header d-flex justify-content-between align-items-center">
@@ -646,7 +709,7 @@
     const auth = firebase.auth();
 
     // ==================== STATE ====================
-    let appData = { products: [], categories: [], transactions: [], productHistory: [] };
+    let appData = { products: [], categories: [], transactions: [], productHistory: [], stockOuts: [] };
     let cart = [];
     let salesChartInstance = null;
     let currentReceiptData = null;
@@ -704,9 +767,9 @@
       } else {
         document.getElementById('login-screen').style.display = 'flex';
         document.getElementById('app-screen').style.display = 'none';
-        db.ref('products').off(); db.ref('categories').off(); db.ref('transactions').off(); db.ref('productHistory').off();
+        db.ref('products').off(); db.ref('categories').off(); db.ref('transactions').off(); db.ref('productHistory').off(); db.ref('stockOuts').off();
         listenersAttached = false;
-        appData = { products: [], categories: [], transactions: [], productHistory: [] };
+        appData = { products: [], categories: [], transactions: [], productHistory: [], stockOuts: [] };
         historyDataGlobal = [];
         showLoading(false);
       }
@@ -721,7 +784,7 @@
       db.ref('products').on('value', (snapshot) => {
         showSync(); appData.products = [];
         snapshot.forEach(child => { appData.products.push({ fbKey: child.key, ...child.val() }); });
-        renderProducts(); renderPosProducts(); renderDashboard(); hideSync();
+        renderProducts(); renderPosProducts(); renderDashboard(); populateStockOutProductSelect(); hideSync();
       }, (error) => { showToast('Gagal sinkronisasi produk: ' + error.message, 'error'); showLoading(false); });
 
       db.ref('categories').on('value', (snapshot) => {
@@ -747,6 +810,14 @@
         hideSync();
       }, (error) => { showToast('Gagal sinkronisasi riwayat produk: ' + error.message, 'error'); });
 
+      // STOCK OUT LISTENER
+      db.ref('stockOuts').on('value', (snapshot) => {
+        showSync(); appData.stockOuts = [];
+        snapshot.forEach(child => { appData.stockOuts.push({ fbKey: child.key, ...child.val() }); });
+        if (document.getElementById('page-stock-out').style.display !== 'none') renderStockOut();
+        hideSync();
+      }, (error) => { showToast('Gagal sinkronisasi pengeluaran: ' + error.message, 'error'); });
+
       db.ref('.info/connected').on('value', (snap) => {
         const statusEl = document.getElementById('sync-status');
         if (snap.val() === true) { statusEl.classList.remove('offline'); statusEl.querySelector('span').textContent = 'Realtime Connected'; }
@@ -768,6 +839,7 @@
       if (page === 'reports') loadReport();
       if (page === 'history') filterHistory();
       if (page === 'product-in-history') renderProductInHistory();
+      if (page === 'stock-out') { populateStockOutProductSelect(); renderStockOut(); }
     }
 
     function showLoading(show) { document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none'; }
@@ -785,7 +857,7 @@
       return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
     }
 
-    // ==================== DASHBOARD (dengan grafik 1 bulan / filter) ====================
+    // ==================== DASHBOARD (sama seperti sebelumnya) ====================
     function renderDashboard() {
       let pendapatan = 0, laba = 0, totalTrx = 0, modalGudang = 0;
       let totalQtyStok = 0, stokHabis = 0;
@@ -794,7 +866,6 @@
       const start = document.getElementById('dash-start')?.value;
       const end = document.getElementById('dash-end')?.value;
 
-      // -- Hitung statistik utama (sama seperti sebelumnya) --
       appData.products.forEach(p => {
         modalGudang += (p.modal * p.stok); totalQtyStok += p.stok;
         if (p.stok === 0) stokHabis++;
@@ -836,55 +907,45 @@
         ? topProducts.map((p, i) => `<div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom"><span style="font-size:0.88rem"><span class="badge bg-secondary me-1" style="font-size:0.7rem;">${i + 1}</span> ${p.nama}</span><span class="fw-bold" style="color:var(--primary);font-size:0.85rem;">${p.qty}</span></div>`).join('')
         : '<p class="text-muted text-center mb-0" style="font-size:0.88rem;">Belum ada penjualan</p>';
 
-      // ========== GRAFIK: 1 BULAN / SESUAI FILTER ==========
-      // Tentukan rentang tanggal untuk grafik
+      // Grafik 30 hari
       let startDate, endDate;
       const today = new Date();
       today.setHours(0,0,0,0);
       if (start && end) {
-        // Gunakan filter yang dipilih
         startDate = new Date(start + 'T00:00:00');
         endDate = new Date(end + 'T23:59:59');
       } else {
-        // Default: 30 hari terakhir (termasuk hari ini)
         startDate = new Date(today);
-        startDate.setDate(startDate.getDate() - 29); // 30 hari termasuk hari ini
+        startDate.setDate(startDate.getDate() - 29);
         endDate = new Date(today);
         endDate.setHours(23,59,59,999);
       }
 
-      // Batasi maksimal 31 hari agar grafik tidak terlalu padat
       const diffDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
       let daysToShow = Math.min(diffDays + 1, 31);
-      // Jika startDate > endDate, swap
       if (startDate > endDate) {
         const temp = startDate;
         startDate = endDate;
         endDate = temp;
       }
-      // Jika selisih lebih dari 31, kita batasi startDate agar hanya 31 hari
       if (daysToShow > 31) {
         startDate = new Date(endDate);
         startDate.setDate(startDate.getDate() - 30);
         daysToShow = 31;
       }
 
-      // Generate array tanggal dari startDate s/d endDate (inklusif)
       const dates = [];
       let current = new Date(startDate);
       while (current <= endDate) {
         dates.push(new Date(current));
         current.setDate(current.getDate() + 1);
       }
-      // Jika jumlah tanggal melebihi 31, potong (seharusnya sudah dibatasi)
       if (dates.length > 31) {
         dates.splice(0, dates.length - 31);
       }
 
-      // Siapkan label dan data
       const chartLabels = [];
       const chartData = [];
-      // Map untuk aggregasi penjualan per tanggal (format YYYY-MM-DD)
       const salesMap = {};
       dates.forEach(d => {
         const key = getLocalDate(d.getTime());
@@ -892,26 +953,21 @@
         salesMap[key] = 0;
       });
 
-      // Loop transaksi dan tambahkan ke salesMap jika dalam rentang
       appData.transactions.forEach(t => {
         const tDate = getLocalDate(t.timestamp);
-        // Cek apakah tDate ada di salesMap (berarti dalam rentang)
         if (salesMap.hasOwnProperty(tDate)) {
           salesMap[tDate] += t.total;
         }
       });
 
-      // Isi chartData sesuai urutan dates
       dates.forEach(d => {
         const key = getLocalDate(d.getTime());
         chartData.push(salesMap[key] || 0);
       });
 
-      // Tampilkan periode di atas grafik
       const periodLabel = `Periode: ${dates[0].toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' })} - ${dates[dates.length-1].toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' })} (${chartData.length} hari)`;
       document.getElementById('chart-period').textContent = periodLabel;
 
-      // Render chart
       const ctx = document.getElementById('salesChart').getContext('2d');
       if (salesChartInstance) salesChartInstance.destroy();
       salesChartInstance = new Chart(ctx, {
@@ -1024,6 +1080,127 @@
       XLSX.utils.book_append_sheet(wb, ws, 'Riwayat Produk Masuk');
       const now = new Date(); const dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
       XLSX.writeFile(wb, `Riwayat_Produk_Masuk_${dateStr}.xlsx`);
+      showToast('File Excel berhasil diunduh!', 'success');
+    }
+
+    // ==================== STOCK OUT (PENGELUARAN BARANG) ====================
+    function populateStockOutProductSelect() {
+      const select = document.getElementById('so-product');
+      select.innerHTML = '<option value="" disabled selected>-- Pilih Produk --</option>' +
+        appData.products.map(p => `<option value="${p.id}" data-stok="${p.stok}" data-modal="${p.modal}">${p.nama} (Stok: ${p.stok})</option>`).join('');
+    }
+
+    function renderStockOut() {
+      const start = document.getElementById('so-start')?.value;
+      const end = document.getElementById('so-end')?.value;
+      const search = document.getElementById('so-search')?.value?.toLowerCase() || '';
+      let filtered = appData.stockOuts.filter(s => {
+        const sDate = getLocalDate(s.timestamp);
+        const inRange = (!start || sDate >= start) && (!end || sDate <= end);
+        const matchSearch = (s.productId && s.productId.toLowerCase().includes(search)) || (s.productName && s.productName.toLowerCase().includes(search));
+        return inRange && matchSearch;
+      });
+      filtered.sort((a, b) => b.timestamp - a.timestamp);
+      const tbody = document.getElementById('table-stock-out');
+      if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Belum ada pengeluaran barang</td></tr>'; return; }
+      tbody.innerHTML = filtered.map(s => `<tr>
+        <td class="text-nowrap" style="font-size:0.82rem;">${s.date || new Date(s.timestamp).toLocaleString('id-ID')}</td>
+        <td class="fw-medium">${s.productId || '-'}</td>
+        <td>${s.productName || '-'}</td>
+        <td><span class="badge bg-danger" style="font-size:0.85rem;">-${s.qty}</span></td>
+        <td>${s.note || '-'}</td>
+        <td>${formatRp(s.totalModal || 0)}</td>
+        <td><button class="btn btn-sm btn-outline-danger" style="border-radius:8px;" onclick="deleteStockOut('${s.fbKey}')"><i class="bi bi-trash"></i></button></td>
+      </tr>`).join('');
+    }
+
+    async function saveStockOut() {
+      const productId = document.getElementById('so-product').value;
+      const qty = Number(document.getElementById('so-qty').value);
+      const note = document.getElementById('so-note').value.trim() || '-';
+      const errorDiv = document.getElementById('so-error');
+
+      if (!productId || qty <= 0) {
+        errorDiv.textContent = 'Pilih produk dan masukkan jumlah yang valid (min 1)';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      const product = appData.products.find(p => p.id === productId);
+      if (!product) {
+        errorDiv.textContent = 'Produk tidak ditemukan';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      if (qty > product.stok) {
+        errorDiv.textContent = `Stok tidak mencukupi! Stok tersedia: ${product.stok}`;
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      errorDiv.style.display = 'none';
+      const timestamp = Date.now();
+      const dateStr = new Date().toLocaleString('id-ID');
+      const totalModal = product.modal * qty;
+
+      const data = {
+        productId: product.id,
+        productName: product.nama,
+        qty: qty,
+        note: note,
+        modal: product.modal,
+        totalModal: totalModal,
+        timestamp: timestamp,
+        date: dateStr
+      };
+
+      showSync();
+      try {
+        // Kurangi stok produk
+        const updates = {};
+        updates[`/products/${product.fbKey}/stok`] = product.stok - qty;
+        updates[`/stockOuts/` + Date.now()] = data; // push dengan key otomatis
+        await db.ref().update(updates);
+        showToast('Pengeluaran barang berhasil dicatat', 'success');
+        // Reset form
+        document.getElementById('so-qty').value = '';
+        document.getElementById('so-note').value = '';
+        document.getElementById('so-product').value = '';
+        populateStockOutProductSelect(); // refresh stok di select
+        renderStockOut();
+      } catch (e) {
+        showToast('Gagal menyimpan: ' + e.message, 'error');
+      }
+    }
+
+    async function deleteStockOut(fbKey) {
+      if (!confirm('Yakin ingin menghapus pengeluaran ini? Data stok produk tidak akan dikembalikan otomatis.')) return;
+      showSync();
+      try {
+        await db.ref('stockOuts/' + fbKey).remove();
+        showToast('Pengeluaran dihapus', 'success');
+        renderStockOut();
+      } catch (e) { showToast('Gagal menghapus: ' + e.message, 'error'); }
+    }
+
+    function downloadStockOutExcel() {
+      if (appData.stockOuts.length === 0) { showToast('Tidak ada data pengeluaran untuk diunduh!', 'error'); return; }
+      const excelData = appData.stockOuts.map((s, index) => ({
+        'No': index + 1,
+        'Tanggal': s.date || new Date(s.timestamp).toLocaleString('id-ID'),
+        'ID Produk': s.productId || '',
+        'Nama Produk': s.productName || '',
+        'Jumlah Keluar': s.qty || 0,
+        'Keterangan': s.note || '-',
+        'Total Modal': s.totalModal || 0
+      }));
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      ws['!cols'] = [{ wch: 5 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 12 }, { wch: 20 }, { wch: 18 }];
+      XLSX.utils.book_append_sheet(wb, ws, 'Pengeluaran Barang');
+      const now = new Date(); const dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+      XLSX.writeFile(wb, `Pengeluaran_Barang_${dateStr}.xlsx`);
       showToast('File Excel berhasil diunduh!', 'success');
     }
 
