@@ -15,6 +15,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js">
   </script>
   <style>
+    /* ===== CSS LENGKAP (sama seperti sebelumnya) ===== */
     :root,
     [data-theme="dark"] {
       --bg-primary: #0b1120;
@@ -52,7 +53,6 @@
       --radius: 8px;
       --radius-lg: 14px;
     }
-
     [data-theme="light"] {
       --bg-primary: #f0f4f8;
       --bg-secondary: #e2e8f0;
@@ -89,7 +89,6 @@
       --radius: 8px;
       --radius-lg: 14px;
     }
-
     *,
     *::before,
     *::after {
@@ -152,7 +151,7 @@
       outline-offset: 2px;
     }
 
-    /* ===== AUTH ===== */
+    /* AUTH */
     .auth-screen {
       position: fixed;
       inset: 0;
@@ -423,7 +422,7 @@
       min-height: 14px;
     }
 
-    /* ===== NAVBAR ===== */
+    /* NAVBAR */
     .user-menu {
       position: relative;
     }
@@ -689,7 +688,7 @@
       opacity: 0;
     }
 
-    /* ===== MAIN ===== */
+    /* MAIN */
     .main-container {
       position: relative;
       z-index: 1;
@@ -753,7 +752,7 @@
       display: block;
     }
 
-    /* ===== STATS ===== */
+    /* STATS */
     .stats-row {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -862,7 +861,7 @@
       margin-top: 2px;
     }
 
-    /* ===== FORM ===== */
+    /* FORM */
     .form-section-title {
       font-size: 0.75rem;
       font-weight: 700;
@@ -942,7 +941,7 @@
       min-height: 70px;
     }
 
-    /* ===== BUTTONS ===== */
+    /* BUTTONS */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -1012,7 +1011,7 @@
       background: linear-gradient(135deg, #228b4f, #1d6f42);
     }
 
-    /* ===== TABLE ===== */
+    /* TABLE */
     .table-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -1190,7 +1189,7 @@
       }
     }
 
-    /* ===== STATUS BADGE ===== */
+    /* STATUS BADGE */
     .status-badge {
       display: inline-flex;
       align-items: center;
@@ -1252,7 +1251,7 @@
       background: #60a5fa;
     }
 
-    /* ===== ACTION ===== */
+    /* ACTION */
     .action-btns {
       display: flex;
       gap: 5px;
@@ -1287,7 +1286,7 @@
       pointer-events: none;
     }
 
-    /* ===== SKELETON ===== */
+    /* SKELETON */
     .table-loading-skeleton {
       padding: 2rem;
       text-align: center;
@@ -1317,7 +1316,7 @@
       }
     }
 
-    /* ===== EMPTY ===== */
+    /* EMPTY */
     .empty-state {
       padding: 3rem 2rem;
       text-align: center;
@@ -1333,7 +1332,7 @@
       font-size: 0.85rem;
     }
 
-    /* ===== MODAL ===== */
+    /* MODAL */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -1439,7 +1438,7 @@
       opacity: 0.7;
     }
 
-    /* ===== TOAST ===== */
+    /* TOAST */
     .toast-container {
       position: fixed;
       top: 80px;
@@ -1511,7 +1510,7 @@
       }
     }
 
-    /* ===== SPINNER ===== */
+    /* SPINNER */
     .spinner {
       width: 18px;
       height: 18px;
@@ -1545,7 +1544,7 @@
       border-top-color: var(--accent);
     }
 
-    /* ===== SUCCESS OVERLAY ===== */
+    /* SUCCESS OVERLAY */
     .success-overlay {
       display: none;
       position: fixed;
@@ -1609,7 +1608,7 @@
       margin-bottom: 1.25rem;
     }
 
-    /* ===== TABLE FOOTER ===== */
+    /* TABLE FOOTER */
     .table-footer {
       padding: 0.85rem 1.5rem;
       border-top: 1px solid var(--border);
@@ -1623,7 +1622,7 @@
       font-family: 'JetBrains Mono', monospace;
     }
 
-    /* ===== RESPONSIVE ===== */
+    /* RESPONSIVE */
     @media (max-width: 768px) {
       .navbar {
         padding: 0 1rem;
@@ -1788,7 +1787,29 @@
               <p style="color:var(--text-muted);font-size:0.82rem;margin-top:0.5rem;">Memuat data...</p>
             </div>
             <table class="data-table" id="dataTableEl" style="display:none;">
-              <thead><tr><th>#</th><th>Status</th><th>Teknisi</th><th>Tgl Pengajuan</th><th>No. Service</th><th>Type (IDNO)</th><th>No. Serie</th><th>No Gudang</th><th>Nama Part</th><th>QTY</th><th>Prod.</th><th>Layanan</th><th>Nama Konsumen</th><th>No. HP</th><th>Tgl Order</th><th>No. Order</th><th>Keterangan</th><th>Aksi</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Status</th>
+                  <th>Teknisi</th>
+                  <th>Tgl Pengajuan</th>
+                  <th>No. Service</th>
+                  <th>Type (IDNO)</th>
+                  <th>No. Serie</th>
+                  <th>No Gudang</th>
+                  <th>Nama Part</th>
+                  <th>QTY</th>
+                  <th>Prod.</th>
+                  <th>Layanan</th>
+                  <th>Nama Konsumen</th>
+                  <th>No. HP</th>
+                  <th>Tgl Order</th>
+                  <th>No. Order</th>
+                  <th>Order ke Pabrik</th>
+                  <th>Keterangan</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
               <tbody id="tableBody"></tbody>
             </table>
           </div>
@@ -1812,7 +1833,29 @@
           </div>
           <div class="table-wrapper">
             <table class="data-table" id="riwayatTableEl" style="display:none;">
-              <thead><tr><th>#</th><th>Status</th><th>Teknisi</th><th>Tgl Pengajuan</th><th>No. Service</th><th>Type (IDNO)</th><th>No. Serie</th><th>No Gudang</th><th>Nama Part</th><th>QTY</th><th>Prod.</th><th>Layanan</th><th>Nama Konsumen</th><th>No. HP</th><th>Tgl Order</th><th>No. Order</th><th>Keterangan</th><th>Aksi</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Status</th>
+                  <th>Teknisi</th>
+                  <th>Tgl Pengajuan</th>
+                  <th>No. Service</th>
+                  <th>Type (IDNO)</th>
+                  <th>No. Serie</th>
+                  <th>No Gudang</th>
+                  <th>Nama Part</th>
+                  <th>QTY</th>
+                  <th>Prod.</th>
+                  <th>Layanan</th>
+                  <th>Nama Konsumen</th>
+                  <th>No. HP</th>
+                  <th>Tgl Order</th>
+                  <th>No. Order</th>
+                  <th>Order ke Pabrik</th>
+                  <th>Keterangan</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
               <tbody id="riwayatBody"></tbody>
             </table>
           </div>
@@ -1841,6 +1884,7 @@
             <div class="form-group"><label class="form-label">Type (IDNO) <span class="required">*</span></label><input class="form-input" type="text" name="TYPE (IDNO)" required /></div>
             <div class="form-group"><label class="form-label">No. Serie</label><input class="form-input" type="text" name="NO. SERIE" /></div>
             <div class="form-group"><label class="form-label">No Gudang</label><input class="form-input" type="text" name="NO GUDANG" /></div>
+            <div class="form-group"><label class="form-label">Order ke Pabrik</label><input class="form-input" type="text" name="ORDER KE PABRIK" placeholder="Opsional" /></div>
             <div class="form-group"><label class="form-label">Nama Part <span class="required">*</span></label><input class="form-input" type="text" name="NAMA PART" required /></div>
             <div class="form-group"><label class="form-label">QTY <span class="required">*</span></label><input class="form-input" type="number" name="QTY" min="1" required /></div>
             <div class="form-group"><label class="form-label">Prod. <span class="required">*</span></label><select class="form-select" name="PROD." required><option value="">-- Pilih --</option><option value="AV">AV</option><option value="HA">HA</option><option value="EV">EV</option></select></div>
@@ -1870,6 +1914,7 @@
         <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="modalStatus"><option value="PENDING">PENDING</option><option value="PROSES">PROSES</option><option value="READY">READY</option><option value="FINISH">FINISH</option></select></div>
         <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> Tgl Order</span></label><input class="form-input" type="date" id="modalTglOrder" /></div>
         <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> No. Order</span></label><input class="form-input" type="text" id="modalNoOrder" /></div>
+        <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> Order ke Pabrik</span></label><input class="form-input" type="text" id="modalOrderPabrik" /></div>
         <div class="form-group"><label class="form-label"><span class="editable-label"><i class="fas fa-pen edit-icon"></i> Keterangan</span></label><textarea class="form-textarea" id="modalKeterangan"></textarea></div>
       </div>
       <div class="modal-footer"><button class="btn btn-secondary btn-sm" onclick="closeEditModal()">Batal</button><button class="btn btn-primary btn-sm" onclick="submitUpdate()" id="modalSaveBtn"><i class="fas fa-save"></i> Simpan</button></div>
@@ -1884,12 +1929,10 @@
   <!-- ==================== TOAST ==================== -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- ============================================================ -->
-  <!-- ======================== SCRIPT ============================= -->
-  <!-- ============================================================ -->
+  <!-- ==================== SCRIPT ==================== -->
   <script>
     // ===== FIREBASE =====
-    const firebaseConfig = {
+    var firebaseConfig = {
       apiKey: "AIzaSyC-xFWRqV21RDdsxhLuP5jUfvDiPVPT5yQ",
       authDomain: "serveronline62-6deca.firebaseapp.com",
       projectId: "serveronline62-6deca",
@@ -1898,22 +1941,22 @@
       appId: "1:594922035940:web:254b4fead6d51ee1842af1"
     };
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore(),
+    var db = firebase.firestore(),
       auth = firebase.auth(),
       ORDERS_COL = 'orders';
 
-    const ADMIN_EMAIL = 'admin@app.local';
-    let isAdmin = false;
+    var ADMIN_EMAIL = 'admin@app.local';
+    var isAdmin = false;
 
-    // ===== INDEXEDDB CACHE =====
-    const CACHE_DB = 'OrderKomponenCache',
+    // ===== INDEXEDDB =====
+    var CACHE_DB = 'OrderKomponenCache',
       CACHE_STORE = 'orders';
-    let idbInstance = null;
+    var idbInstance = null;
 
     function openIDB() {
       if (idbInstance) return Promise.resolve(idbInstance);
       return new Promise(function(res, rej) {
-        const r = indexedDB.open(CACHE_DB, 1);
+        var r = indexedDB.open(CACHE_DB, 1);
         r.onupgradeneeded = function(e) {
           e.target.result.createObjectStore(CACHE_STORE, { keyPath: '_docId' });
         };
@@ -1929,7 +1972,7 @@
 
     function cacheToLocal(d) {
       openIDB().then(function(idb) {
-        const tx = idb.transaction(CACHE_STORE, 'readwrite'),
+        var tx = idb.transaction(CACHE_STORE, 'readwrite'),
           s = tx.objectStore(CACHE_STORE);
         s.clear();
         d.forEach(function(i) { s.put(i); });
@@ -1939,7 +1982,7 @@
     function loadFromCache() {
       return openIDB().then(function(idb) {
         return new Promise(function(res, rej) {
-          const tx = idb.transaction(CACHE_STORE, 'readonly'),
+          var tx = idb.transaction(CACHE_STORE, 'readonly'),
             s = tx.objectStore(CACHE_STORE),
             r = s.getAll();
           r.onsuccess = function() { res(r.result || []); };
@@ -1955,7 +1998,7 @@
     }
 
     // ===== STATE =====
-    let allOrders = [],
+    var allOrders = [],
       currentFilter = 'all',
       newRowIndices = new Set(),
       searchDebounceTimer = null,
@@ -1972,7 +2015,7 @@
       return allOrders.filter(function(o) { return (o['STATUS'] || '').toUpperCase() === 'FINISH'; });
     }
 
-    // ===== AUTH =====
+    // ===== AUTH FUNCTIONS =====
     function switchAuthTab(t, b) {
       document.querySelectorAll('.auth-tab').forEach(function(x) { x.classList.remove('active'); });
       document.querySelectorAll('.auth-form').forEach(function(x) { x.classList.remove('active'); });
@@ -2174,7 +2217,7 @@
 
     // ===== ENGINE =====
     async function startDataEngine() {
-      const cached = await loadFromCache();
+      var cached = await loadFromCache();
       if (cached.length > 0) {
         cached.sort(function(a, b) {
           var ta = a.createdAt ? (a.createdAt.seconds || 0) : 0,
@@ -2320,27 +2363,32 @@
         });
     }
 
+    // ===== HANDLE SUBMIT (tambahkan ORDER KE PABRIK) =====
     function handleSubmit(e) {
       e.preventDefault();
       var f = document.getElementById('orderForm'),
         fd = new FormData(f),
         d = {};
       for (var p of fd.entries()) d[p[0]] = p[1].trim();
+
       var rf = ['TEKNISI', 'TGL PENGAJUAN ORD', 'TYPE (IDNO)', 'NAMA PART', 'QTY', 'PROD.', 'LAYANAN', 'NAMA KONSUMEN',
           'NO. HP'
         ],
         fl = { 'TEKNISI': 'Teknisi', 'TGL PENGAJUAN ORD': 'Tgl Pengajuan', 'TYPE (IDNO)': 'Type (IDNO)',
           'NAMA PART': 'Nama Part', 'QTY': 'QTY', 'PROD.': 'Prod.', 'LAYANAN': 'Layanan', 'NAMA KONSUMEN': 'Nama Konsumen',
-          'NO. HP': 'No. HP' };
+          'NO. HP': 'No. HP'
+        };
       for (var i = 0; i < rf.length; i++) {
         if (!d[rf[i]]) { showToast('"' + (fl[rf[i]] || rf[i]) + '" wajib diisi!', 'error'); return; }
       }
       if (parseInt(d['QTY']) < 1) { showToast('QTY harus minimal 1!', 'error'); return; }
+
       var sb = document.getElementById('submitBtn'),
         fl2 = document.getElementById('formLoading');
       sb.disabled = true;
       sb.innerHTML = '<div class="spinner"></div> Menyimpan...';
       fl2.classList.add('active');
+
       generateOrderNo().then(function(orderNo) {
         var user = auth.currentUser;
         return db.collection(ORDERS_COL).add({
@@ -2351,6 +2399,7 @@
           'TYPE (IDNO)': d['TYPE (IDNO)'],
           'NO. SERIE': d['NO. SERIE'] || '',
           'NO GUDANG': d['NO GUDANG'] || '',
+          'ORDER KE PABRIK': d['ORDER KE PABRIK'] || '',
           'NAMA PART': d['NAMA PART'],
           'QTY': d['QTY'],
           'PROD.': d['PROD.'],
@@ -2378,17 +2427,11 @@
       });
     }
 
-    // =============================================================
-    // ===== INLINE EDIT UNTUK No. Order (Double‑klik) =============
-    // =============================================================
+    // ===== INLINE EDIT: No. Order =====
     function editNoOrder(docId, td) {
-      // Jika sudah dalam mode edit, abaikan
       if (td.querySelector('input')) return;
-
       var currentValue = td.textContent.trim();
-      // Jika nilai saat ini "-" (tanda kosong), kosongkan input
       var displayValue = (currentValue === '-' ? '' : currentValue);
-
       var input = document.createElement('input');
       input.type = 'text';
       input.value = displayValue;
@@ -2402,7 +2445,6 @@
       input.style.fontFamily = 'inherit';
       input.style.fontSize = '0.75rem';
       input.style.color = 'var(--text-primary)';
-
       td.textContent = '';
       td.appendChild(input);
       input.focus();
@@ -2410,24 +2452,20 @@
 
       var save = function() {
         var newValue = input.value.trim();
-        // Jika nilai sama, tidak usah update
         if (newValue === currentValue || (newValue === '' && currentValue === '-')) {
           td.textContent = currentValue || '-';
           return;
         }
-        // Tidak boleh kosong
         if (!newValue) {
           showToast('No. Order tidak boleh kosong!', 'error');
           td.textContent = currentValue || '-';
           return;
         }
-        // Update ke Firestore
         var updates = { 'No. Order': newValue };
         db.collection(ORDERS_COL).doc(docId).update(updates)
           .then(function() {
             showToast('No. Order berhasil diupdate!', 'success');
             td.textContent = newValue;
-            // Perbarui cache lokal
             var order = allOrders.find(function(o) { return o._docId === docId; });
             if (order) order['No. Order'] = newValue;
           })
@@ -2442,13 +2480,65 @@
       };
 
       input.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          input.blur();
+        if (e.key === 'Enter') { e.preventDefault();
+          input.blur(); }
+        if (e.key === 'Escape') { cancel(); }
+      });
+      input.addEventListener('blur', save);
+    }
+
+    // ===== INLINE EDIT: Order ke Pabrik =====
+    function editOrderPabrik(docId, td) {
+      if (td.querySelector('input')) return;
+      var currentValue = td.textContent.trim();
+      var displayValue = (currentValue === '-' ? '' : currentValue);
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.value = displayValue;
+      input.className = 'form-input';
+      input.style.width = '100%';
+      input.style.minWidth = '80px';
+      input.style.background = 'var(--bg-input)';
+      input.style.border = '1px solid var(--border-focus)';
+      input.style.borderRadius = 'var(--radius)';
+      input.style.padding = '4px 8px';
+      input.style.fontFamily = 'inherit';
+      input.style.fontSize = '0.75rem';
+      input.style.color = 'var(--text-primary)';
+      td.textContent = '';
+      td.appendChild(input);
+      input.focus();
+      input.select();
+
+      var save = function() {
+        var newValue = input.value.trim();
+        if (newValue === currentValue || (newValue === '' && currentValue === '-')) {
+          td.textContent = currentValue || '-';
+          return;
         }
-        if (e.key === 'Escape') {
-          cancel();
-        }
+        // Boleh kosong
+        var updates = { 'ORDER KE PABRIK': newValue };
+        db.collection(ORDERS_COL).doc(docId).update(updates)
+          .then(function() {
+            showToast('Order ke Pabrik berhasil diupdate!', 'success');
+            td.textContent = newValue || '-';
+            var order = allOrders.find(function(o) { return o._docId === docId; });
+            if (order) order['ORDER KE PABRIK'] = newValue;
+          })
+          .catch(function(err) {
+            showToast('Gagal update: ' + err.message, 'error');
+            td.textContent = currentValue || '-';
+          });
+      };
+
+      var cancel = function() {
+        td.textContent = currentValue || '-';
+      };
+
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault();
+          input.blur(); }
+        if (e.key === 'Escape') { cancel(); }
       });
       input.addEventListener('blur', save);
     }
@@ -2492,6 +2582,7 @@
           isNew = newRowIndices.has(ri),
           to = o['TGL Order'] || '',
           no = o['No. Order'] || '',
+          op = o['ORDER KE PABRIK'] || '',
           k = o['Keterangan Pemenuhan'] || '',
           da = 'onclick="openEditModal(\'' + o._docId + '\')"';
 
@@ -2511,10 +2602,12 @@
           '<td class="name-cell">' + escapeHtml(o['NAMA KONSUMEN'] || '') + '</td>' +
           '<td>' + escapeHtml(o['NO. HP'] || '') + '</td>' +
           '<td class="editable-cell" ' + da + '>' + formatDateDisplay(to) + '</td>' +
-          // ===== KOLOM No. Order dengan INLINE EDIT (double‑klik) =====
           '<td class="editable-cell" ondblclick="editNoOrder(\'' + o._docId +
           '\', this)" title="Double‑klik untuk edit" style="color:var(--accent);font-weight:600;cursor:text;">' +
           escapeHtml(no || '-') + '</td>' +
+          '<td class="editable-cell" ondblclick="editOrderPabrik(\'' + o._docId +
+          '\', this)" title="Double‑klik untuk edit" style="cursor:text;">' +
+          escapeHtml(op || '-') + '</td>' +
           '<td class="editable-cell" ' + da + '>' + escapeHtml(k || '-') + '</td>' +
           '<td><div class="action-btns"><button class="action-btn" ' + da +
           '><i class="fas fa-pen"></i></button><button class="action-btn locked" title="Hanya FINISH bisa dihapus"><i class="fas fa-trash"></i></button></div></td>' +
@@ -2570,6 +2663,7 @@
         var o = fd[i],
           to = o['TGL Order'] || '',
           no = o['No. Order'] || '',
+          op = o['ORDER KE PABRIK'] || '',
           k = o['Keterangan Pemenuhan'] || '';
 
         h += '<tr>' +
@@ -2589,11 +2683,14 @@
           '<td>' + escapeHtml(o['NO. HP'] || '') + '</td>' +
           '<td class="' + cellClass + '" ' + editAction + o._docId + editActionClose + '>' + formatDateDisplay(to) +
           '</td>' +
-          // ===== KOLOM No. Order dengan INLINE EDIT (hanya Admin) =====
           '<td class="' + cellClass + '" ' +
           (canEdit ? 'ondblclick="editNoOrder(\'' + o._docId + '\', this)" title="Double‑klik untuk edit"' : '') +
           ' style="' + (canEdit ? 'cursor:text;' : '') + 'color:var(--info);font-weight:600;">' +
           escapeHtml(no || '-') + '</td>' +
+          '<td class="' + cellClass + '" ' +
+          (canEdit ? 'ondblclick="editOrderPabrik(\'' + o._docId + '\', this)" title="Double‑klik untuk edit"' : '') +
+          ' style="' + (canEdit ? 'cursor:text;' : '') + '">' +
+          escapeHtml(op || '-') + '</td>' +
           '<td class="' + cellClass + '" ' + editAction + o._docId + editActionClose + '>' + escapeHtml(k || '-') +
           '</td>' +
           '<td><div class="action-btns"><button class="action-btn' + btnEditClass + '" ' + editAction + o._docId +
@@ -2646,6 +2743,7 @@
       document.getElementById('modalStatus').value = (o['STATUS'] || 'PENDING').toUpperCase();
       document.getElementById('modalTglOrder').value = o['TGL Order'] || '';
       document.getElementById('modalNoOrder').value = o['No. Order'] || '';
+      document.getElementById('modalOrderPabrik').value = o['ORDER KE PABRIK'] || '';
       document.getElementById('modalKeterangan').value = o['Keterangan Pemenuhan'] || '';
       document.getElementById('modalOrderNo').textContent = '#' + (o['No. Order'] || '-');
       document.getElementById('modalPartInfo').textContent = (o['NAMA PART'] || '-') + ' | ' + (o['NAMA KONSUMEN'] || '-');
@@ -2658,6 +2756,7 @@
         'STATUS': document.getElementById('modalStatus').value,
         'TGL Order': document.getElementById('modalTglOrder').value,
         'No. Order': document.getElementById('modalNoOrder').value,
+        'ORDER KE PABRIK': document.getElementById('modalOrderPabrik').value,
         'Keterangan Pemenuhan': document.getElementById('modalKeterangan').value
       };
       var sb = document.getElementById('modalSaveBtn');
@@ -2720,14 +2819,15 @@
       b.innerHTML = '<div class="spinner"></div>';
       try {
         var eh = ['No', 'Status', 'Teknisi', 'Tgl Pengajuan', 'No. Service', 'Type (IDNO)', 'No. Serie', 'No Gudang',
-          'Nama Part', 'QTY', 'Prod.', 'Layanan', 'Nama Konsumen', 'No. HP', 'Tgl Order', 'No. Order', 'Keterangan'
+          'Nama Part', 'QTY', 'Prod.', 'Layanan', 'Nama Konsumen', 'No. HP', 'Tgl Order', 'No. Order',
+          'Order ke Pabrik', 'Keterangan'
         ];
         var rows = fd.map(function(o, i) {
           return [i + 1, o['STATUS'] || '', o['TEKNISI'] || '', formatDateDisplay(o['TGL PENGAJUAN ORD'] || ''),
             o['NO. SERVICE CASE'] || '', o['TYPE (IDNO)'] || '', o['NO. SERIE'] || '', o['NO GUDANG'] || '',
             o['NAMA PART'] || '', o['QTY'] || '', o['PROD.'] || '', o['LAYANAN'] || '',
             o['NAMA KONSUMEN'] || '', o['NO. HP'] || '', formatDateDisplay(o['TGL Order'] || ''),
-            o['No. Order'] || '', o['Keterangan Pemenuhan'] || ''
+            o['No. Order'] || '', o['ORDER KE PABRIK'] || '', o['Keterangan Pemenuhan'] || ''
           ];
         });
         var wb = XLSX.utils.book_new(),
@@ -2786,7 +2886,7 @@
       if (el) el.textContent = 'Sync: ' + t;
     }
 
-    // ===== GLOBAL KEYBOARD =====
+    // ===== KEYBOARD SHORTCUTS =====
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         closeInputModal();
@@ -2799,6 +2899,8 @@
     });
     document.getElementById('inputModal').addEventListener('click', function(e) { if (e.target === this) closeInputModal(); });
     document.getElementById('editModal').addEventListener('click', function(e) { if (e.target === this) closeEditModal(); });
+
+    console.log('✅ Aplikasi siap dengan kolom Order ke Pabrik!');
   </script>
 </body>
 </html>
