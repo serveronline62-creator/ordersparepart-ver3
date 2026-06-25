@@ -1164,6 +1164,7 @@
       const doc = new jsPDF('portrait', 'mm', 'a4');
       const pageWidth = doc.internal.pageSize.getWidth();
 
+      // Header
       doc.setFontSize(16);
       doc.text('Riwayat Produk Masuk', pageWidth/2, 15, { align: 'center' });
       doc.setFontSize(10);
@@ -1171,12 +1172,14 @@
       doc.text(dateLabel, pageWidth/2, 22, { align: 'center' });
       doc.text(`Total Data: ${filtered.length}`, pageWidth/2, 29, { align: 'center' });
 
+      // Hitung total
       let totalQty = 0, totalModal = 0;
       filtered.forEach(h => {
         totalQty += h.qty || 0;
         totalModal += h.totalModal || 0;
       });
 
+      // Tabel data dengan nomor urut
       const rows = filtered.map((h, index) => [
         index + 1,
         h.date || new Date(h.timestamp).toLocaleString('id-ID'),
@@ -1193,28 +1196,30 @@
         head: [['No', 'Tanggal', 'ID Produk', 'Nama Produk', 'Kategori', 'Jml Masuk', 'Harga Modal', 'Total Modal']],
         body: rows,
         theme: 'striped',
-        headStyles: { fillColor: [230, 57, 70], textColor: [255,255,255], fontSize: 7, halign: 'center' },
-        bodyStyles: { fontSize: 7, cellPadding: 1, overflow: 'ellipsize' },
+        headStyles: { fillColor: [230, 57, 70], textColor: [255,255,255], fontSize: 7, halign: 'center', cellPadding: 1 },
+        bodyStyles: { fontSize: 6.5, cellPadding: 0.8 },
         columnStyles: {
-          0: { cellWidth: 8, halign: 'center' },
-          1: { cellWidth: 28, halign: 'center' },
+          0: { cellWidth: 7, halign: 'center' },
+          1: { cellWidth: 23, halign: 'center' },
           2: { cellWidth: 18, halign: 'center' },
           3: { cellWidth: 32, halign: 'left' },
           4: { cellWidth: 20, halign: 'center' },
           5: { cellWidth: 15, halign: 'center' },
-          6: { cellWidth: 25, halign: 'right' },
-          7: { cellWidth: 25, halign: 'right' }
+          6: { cellWidth: 22, halign: 'right' },
+          7: { cellWidth: 22, halign: 'right' }
         },
         margin: { left: 8, right: 8 },
         tableWidth: 'auto',
+        styles: { overflow: 'visible' }, // Mencegah wrap
         pageBreak: 'auto'
       });
 
-      const finalY = doc.lastAutoTable.finalY + 10;
-      doc.setFontSize(10);
+      // Total di bawah tabel
+      const finalY = doc.lastAutoTable.finalY + 8;
+      doc.setFontSize(9);
       doc.setFont(undefined, 'bold');
       doc.text(`Total Jumlah Masuk: ${totalQty}`, 14, finalY);
-      doc.text(`Total Seluruh Modal: ${formatRp(totalModal)}`, 14, finalY + 6);
+      doc.text(`Total Seluruh Modal: ${formatRp(totalModal)}`, 14, finalY + 5);
       doc.setFont(undefined, 'normal');
 
       const now = new Date(); const dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
@@ -1359,6 +1364,7 @@
       const doc = new jsPDF('portrait', 'mm', 'a4');
       const pageWidth = doc.internal.pageSize.getWidth();
 
+      // Header
       doc.setFontSize(16);
       doc.text('Pengeluaran Barang', pageWidth/2, 15, { align: 'center' });
       doc.setFontSize(10);
@@ -1366,12 +1372,14 @@
       doc.text(dateLabel, pageWidth/2, 22, { align: 'center' });
       doc.text(`Total Data: ${filtered.length}`, pageWidth/2, 29, { align: 'center' });
 
+      // Hitung total
       let totalQty = 0, totalModal = 0;
       filtered.forEach(s => {
         totalQty += s.qty || 0;
         totalModal += s.totalModal || 0;
       });
 
+      // Tabel data dengan nomor urut
       const rows = filtered.map((s, index) => [
         index + 1,
         s.date || new Date(s.timestamp).toLocaleString('id-ID'),
@@ -1387,27 +1395,29 @@
         head: [['No', 'Tanggal', 'ID Produk', 'Nama Produk', 'Jml Keluar', 'Keterangan', 'Total Modal']],
         body: rows,
         theme: 'striped',
-        headStyles: { fillColor: [230, 57, 70], textColor: [255,255,255], fontSize: 7, halign: 'center' },
-        bodyStyles: { fontSize: 7, cellPadding: 1, overflow: 'ellipsize' },
+        headStyles: { fillColor: [230, 57, 70], textColor: [255,255,255], fontSize: 7, halign: 'center', cellPadding: 1 },
+        bodyStyles: { fontSize: 6.5, cellPadding: 0.8 },
         columnStyles: {
-          0: { cellWidth: 8, halign: 'center' },
-          1: { cellWidth: 28, halign: 'center' },
+          0: { cellWidth: 7, halign: 'center' },
+          1: { cellWidth: 23, halign: 'center' },
           2: { cellWidth: 18, halign: 'center' },
           3: { cellWidth: 35, halign: 'left' },
           4: { cellWidth: 15, halign: 'center' },
-          5: { cellWidth: 30, halign: 'left' },
-          6: { cellWidth: 25, halign: 'right' }
+          5: { cellWidth: 28, halign: 'left' },
+          6: { cellWidth: 22, halign: 'right' }
         },
         margin: { left: 8, right: 8 },
         tableWidth: 'auto',
+        styles: { overflow: 'visible' },
         pageBreak: 'auto'
       });
 
-      const finalY = doc.lastAutoTable.finalY + 10;
-      doc.setFontSize(10);
+      // Total di bawah tabel
+      const finalY = doc.lastAutoTable.finalY + 8;
+      doc.setFontSize(9);
       doc.setFont(undefined, 'bold');
       doc.text(`Total Jumlah Keluar: ${totalQty}`, 14, finalY);
-      doc.text(`Total Seluruh Modal: ${formatRp(totalModal)}`, 14, finalY + 6);
+      doc.text(`Total Seluruh Modal: ${formatRp(totalModal)}`, 14, finalY + 5);
       doc.setFont(undefined, 'normal');
 
       const now = new Date(); const dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
