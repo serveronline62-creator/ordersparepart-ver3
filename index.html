@@ -15,6 +15,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js">
   </script>
   <style>
+    /* ===== CSS LENGKAP (sama seperti sebelumnya, tidak diubah) ===== */
     :root,
     [data-theme="dark"] {
       --bg-primary: #0b1120;
@@ -1895,18 +1896,7 @@
             <div class="form-group"><label class="form-label">Nama Konsumen <span class="required">*</span></label><input class="form-input" type="text" name="NAMA KONSUMEN" required /></div>
             <div class="form-group"><label class="form-label">No. HP <span class="required">*</span></label><input class="form-input" type="tel" name="NO. HP" required /></div>
           </div>
-          <div class="form-section-title">Informasi Penerimaan Part</div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">TGL TERIMA PART</label>
-              <input class="form-input" type="date" name="TGL TERIMA PART" id="inpTglTerimaPart" onchange="hitungJumlahHari()" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Jumlah (hari)</label>
-              <input class="form-input" type="number" name="JUMLAH" id="inpJumlah" readonly style="background:var(--bg-card);cursor:default;font-weight:700;color:var(--accent);" />
-              <small style="color:var(--text-muted);font-size:0.65rem;">Otomatis terisi dari selisih Tgl Pengajuan</small>
-            </div>
-          </div>
+          <!-- ===== BAGIAN INFORMASI PENERIMAAN PART DIHAPUS ===== -->
         </form>
       </div>
       <div class="modal-footer">
@@ -2028,24 +2018,7 @@
       return allOrders.filter(function(o) { return (o['STATUS'] || '').toUpperCase() === 'FINISH'; });
     }
 
-    // ===== FUNGSI HITUNG JUMLAH HARI =====
-    function hitungJumlahHari() {
-      var tglPengajuan = document.getElementById('inpTglPengajuan').value;
-      var tglTerima = document.getElementById('inpTglTerimaPart').value;
-      var target = document.getElementById('inpJumlah');
-
-      if (!tglPengajuan || !tglTerima) {
-        target.value = '';
-        return;
-      }
-
-      var d1 = new Date(tglPengajuan);
-      var d2 = new Date(tglTerima);
-      var diffTime = Math.abs(d2 - d1);
-      var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      target.value = diffDays;
-    }
-
+    // ===== FUNGSI HITUNG JUMLAH HARI (untuk modal edit) =====
     function editHitungJumlahHari() {
       var modal = document.getElementById('editModal');
       var docId = document.getElementById('modalRowIndex').value;
@@ -2387,8 +2360,6 @@
     function resetForm() {
       document.getElementById('orderForm').reset();
       setDefaultDate();
-      document.getElementById('inpTglTerimaPart').value = '';
-      document.getElementById('inpJumlah').value = '';
     }
 
     function setDefaultDate() {
@@ -2438,17 +2409,9 @@
       }
       if (parseInt(d['QTY']) < 1) { showToast('QTY harus minimal 1!', 'error'); return; }
 
-      // Hitung jumlah hari sebelum simpan
-      var tglPengajuan = d['TGL PENGAJUAN ORD'];
-      var tglTerima = d['TGL TERIMA PART'] || '';
+      // Karena field TGL TERIMA PART dan JUMLAH tidak ada di form input, kita set kosong
+      var tglTerima = '';
       var jumlah = '';
-      if (tglPengajuan && tglTerima) {
-        var d1 = new Date(tglPengajuan);
-        var d2 = new Date(tglTerima);
-        var diffTime = Math.abs(d2 - d1);
-        var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        jumlah = String(diffDays);
-      }
 
       var sb = document.getElementById('submitBtn'),
         fl2 = document.getElementById('formLoading');
@@ -2501,7 +2464,6 @@
       if (td.querySelector('input')) return;
       var currentValue = td.textContent.trim();
       var displayValue = (currentValue === '-' ? '' : currentValue);
-      // Konversi format DD/MM/YYYY ke YYYY-MM-DD untuk input date
       if (displayValue && displayValue.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
         var parts = displayValue.split('/');
         displayValue = parts[2] + '-' + parts[1] + '-' + parts[0];
@@ -2534,7 +2496,6 @@
           return;
         }
 
-        // Hitung jumlah hari
         var jumlah = '';
         if (tglPengajuan && newValue) {
           var d1 = new Date(tglPengajuan);
@@ -2557,7 +2518,6 @@
               order['TGL TERIMA PART'] = newValue;
               order['JUMLAH'] = jumlah;
             }
-            // Refresh tabel untuk update kolom Jumlah
             renderAll();
           })
           .catch(function(err) {
@@ -2851,7 +2811,6 @@
       var order = allOrders.find(function(o) { return o._docId === docId; });
       var tglPengajuan = order ? order['TGL PENGAJUAN ORD'] : '';
 
-      // Hitung jumlah hari
       var jumlah = document.getElementById('modalJumlah').value;
       if (tglPengajuan && tglTerima) {
         var d1 = new Date(tglPengajuan);
@@ -3012,7 +2971,7 @@
     document.getElementById('inputModal').addEventListener('click', function(e) { if (e.target === this) closeInputModal(); });
     document.getElementById('editModal').addEventListener('click', function(e) { if (e.target === this) closeEditModal(); });
 
-    console.log('✅ Aplikasi siap - TGL TERIMA PART & Jumlah telah ditambahkan.');
+    console.log('✅ Aplikasi siap - Informasi Penerimaan Part disembunyikan di Input Order.');
   </script>
 </body>
 </html>
