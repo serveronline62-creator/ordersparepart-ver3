@@ -640,6 +640,7 @@
                 <li class="active" onclick="showPage('dashboard', this)"><i class="bi bi-grid-1x2-fill"></i> Dashboard</li>
                 <li onclick="showPage('pos', this)"><i class="bi bi-cart-plus-fill"></i> Kasir (POS)</li>
                 <li onclick="showPage('products', this)"><i class="bi bi-box-seam-fill"></i> Produk</li>
+                <li onclick="showPage('product-in-history', this)"><i class="bi bi-arrow-down-circle-fill"></i> Riwayat Produk Masuk</li>
                 <li onclick="showPage('categories', this)"><i class="bi bi-tags-fill"></i> Kategori</li>
             </ul>
             <div class="sidebar-section">Analitik</div>
@@ -847,6 +848,53 @@
                                 </tr>
                             </thead>
                             <tbody id="table-products"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== PRODUCT IN HISTORY PAGE ====== -->
+            <div id="page-product-in-history" class="page-content" style="display:none;">
+                <div class="page-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2>Riwayat Produk Masuk</h2>
+                        <p class="mb-0">Mencatat setiap penambahan stok produk baru atau update stok bertambah</p>
+                    </div>
+                    <button class="btn btn-success" style="border-radius:10px;" onclick="downloadProductInHistoryExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> Download Excel</button>
+                </div>
+                <div class="table-container mb-3">
+                    <div class="row align-items-end g-3">
+                        <div class="col-md-3">
+                            <label class="form-label fw-medium" style="font-size:0.85rem;">Dari Tanggal</label>
+                            <input type="date" id="pih-start" class="form-control" style="border-radius:10px;" onchange="renderProductInHistory()" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-medium" style="font-size:0.85rem;">Sampai Tanggal</label>
+                            <input type="date" id="pih-end" class="form-control" style="border-radius:10px;" onchange="renderProductInHistory()" />
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="pih-search" placeholder="Cari..." oninput="renderProductInHistory()" />
+                                <label for="pih-search">Cari ID atau Nama Produk...</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>ID Produk</th>
+                                    <th>Nama Produk</th>
+                                    <th>Kategori</th>
+                                    <th>Jumlah Masuk</th>
+                                    <th>Harga Modal</th>
+                                    <th>Total Modal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-product-in-history"></tbody>
                         </table>
                     </div>
                 </div>
@@ -1112,7 +1160,7 @@
         const auth = firebase.auth();
 
         // ==================== STATE ====================
-        let appData = { products: [], categories: [], transactions: [] };
+        let appData = { products: [], categories: [], transactions: [], productHistory: [] };
         let cart = [];
         let salesChartInstance = null;
         let currentReceiptData = null;
@@ -1176,8 +1224,9 @@
                 db.ref('products').off();
                 db.ref('categories').off();
                 db.ref('transactions').off();
+                db.ref('productHistory').off();
                 listenersAttached = false;
-                appData = { products: [], categories: [], transactions: [] };
+                appData = { products: [], categories: [], transactions: [], productHistory: [] };
                 historyDataGlobal = [];
                 showLoading(false);
             }
@@ -1190,6 +1239,7 @@
 
         function initRealtimeListeners() {
             showLoading(true);
+
             db.ref('products').on('value', (snapshot) => {
                 showSync();
                 appData.products = [];
@@ -1226,6 +1276,16 @@
             }, (error) => { showToast('Gagal sinkronisasi transaksi: ' + error.message, 'error');
                 showLoading(false); });
 
+            // Product History Listener
+            db.ref('productHistory').on('value', (snapshot) => {
+                showSync();
+                appData.productHistory = [];
+                snapshot.forEach(child => { appData.productHistory.push({ fbKey: child.key, ...child.val() }); });
+                if (document.getElementById('page-product-in-history').style.display !== 'none')
+                    renderProductInHistory();
+                hideSync();
+            }, (error) => { showToast('Gagal sinkronisasi riwayat produk: ' + error.message, 'error'); });
+
             db.ref('.info/connected').on('value', (snap) => {
                 const statusEl = document.getElementById('sync-status');
                 if (snap.val() === true) { statusEl.classList.remove('offline');
@@ -1248,6 +1308,7 @@
             if (page === 'categories') renderCategories();
             if (page === 'reports') loadReport();
             if (page === 'history') filterHistory();
+            if (page === 'product-in-history') renderProductInHistory();
         }
 
         function showLoading(show) { document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none'; }
@@ -1423,12 +1484,41 @@
                 showToast('Semua field wajib diisi dengan benar!', 'error');
                 return;
             }
+
+            // Cek stok lama untuk mencatat history
+            let oldStok = 0;
+            if (fbKey) {
+                const oldProduct = appData.products.find(p => p.fbKey === fbKey);
+                if (oldProduct) oldStok = oldProduct.stok;
+            }
+
             bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
             showSync();
             try {
-                if (fbKey) { await db.ref('products/' + fbKey).update(data);
-                    showToast('Produk berhasil diperbarui', 'success'); } else { await db.ref('products').push(data);
-                    showToast('Produk baru berhasil ditambahkan', 'success'); }
+                if (fbKey) {
+                    await db.ref('products/' + fbKey).update(data);
+                    showToast('Produk berhasil diperbarui', 'success');
+                } else {
+                    await db.ref('products').push(data);
+                    showToast('Produk baru berhasil ditambahkan', 'success');
+                }
+
+                // Catat riwayat produk masuk jika stok bertambah
+                const selisih = data.stok - oldStok;
+                if (selisih > 0) {
+                    const historyData = {
+                        productId: data.id,
+                        productName: data.nama,
+                        category: data.kategori,
+                        qty: selisih,
+                        modal: data.modal,
+                        totalModal: data.modal * selisih,
+                        timestamp: Date.now(),
+                        date: new Date().toLocaleString('id-ID')
+                    };
+                    await db.ref('productHistory').push(historyData);
+                }
+
             } catch (e) { showToast('Gagal menyimpan: ' + e.message, 'error'); }
         }
 
@@ -1460,6 +1550,66 @@
             const dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })
                 .replace(/\//g, '-');
             XLSX.writeFile(wb, `Data_Produk_KasirPOS_${dateStr}.xlsx`);
+            showToast('File Excel berhasil diunduh!', 'success');
+        }
+
+        // ==================== RIWAYAT PRODUK MASUK ====================
+        function renderProductInHistory() {
+            const start = document.getElementById('pih-start')?.value;
+            const end = document.getElementById('pih-end')?.value;
+            const search = document.getElementById('pih-search')?.value?.toLowerCase() || '';
+
+            let filtered = appData.productHistory.filter(h => {
+                const hDate = getLocalDate(h.timestamp);
+                const inRange = (!start || hDate >= start) && (!end || hDate <= end);
+                const matchSearch = (h.productId && h.productId.toLowerCase().includes(search)) ||
+                    (h.productName && h.productName.toLowerCase().includes(search));
+                return inRange && matchSearch;
+            });
+
+            // Urutkan dari yang terbaru
+            filtered.sort((a, b) => b.timestamp - a.timestamp);
+
+            const tbody = document.getElementById('table-product-in-history');
+            if (filtered.length === 0) {
+                tbody.innerHTML =
+                    '<tr><td colspan="7" class="text-center text-muted py-4">Tidak ada riwayat produk masuk</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(h =>
+                `<tr>
+                    <td class="text-nowrap" style="font-size:0.82rem;">${h.date || new Date(h.timestamp).toLocaleString('id-ID')}</td>
+                    <td class="fw-medium">${h.productId || '-'}</td>
+                    <td>${h.productName || '-'}</td>
+                    <td><span class="badge-cat">${h.category || '-'}</span></td>
+                    <td><span class="badge bg-success" style="font-size:0.85rem;">+${h.qty}</span></td>
+                    <td>${formatRp(h.modal || 0)}</td>
+                    <td class="fw-bold">${formatRp(h.totalModal || 0)}</td>
+                </tr>`
+            ).join('');
+        }
+
+        function downloadProductInHistoryExcel() {
+            if (appData.productHistory.length === 0) { showToast('Tidak ada data riwayat untuk diunduh!', 'error'); return; }
+            const excelData = appData.productHistory.map((h, index) => ({
+                'No': index + 1,
+                'Tanggal': h.date || new Date(h.timestamp).toLocaleString('id-ID'),
+                'ID Produk': h.productId || '',
+                'Nama Produk': h.productName || '',
+                'Kategori': h.category || '',
+                'Jumlah Masuk': h.qty || 0,
+                'Harga Modal': h.modal || 0,
+                'Total Modal': h.totalModal || 0
+            }));
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(excelData);
+            ws['!cols'] = [{ wch: 5 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 18 }];
+            XLSX.utils.book_append_sheet(wb, ws, 'Riwayat Produk Masuk');
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                .replace(/\//g, '-');
+            XLSX.writeFile(wb, `Riwayat_Produk_Masuk_${dateStr}.xlsx`);
             showToast('File Excel berhasil diunduh!', 'success');
         }
 
